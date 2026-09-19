@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: kassa-postgres
+    environment:
+      POSTGRES_DB: kassa
+      POSTGRES_USER: kassa
+      POSTGRES_PASSWORD: kassa
+      TZ: UTC
+    # 호스트 5432 는 다른 PostgreSQL 이 쓰고 있어 5433 으로 내보낸다
+    ports:
+      - "5433:5432"
+    volumes:
+      - kassa-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kassa -d kassa"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  kassa-pgdata:
