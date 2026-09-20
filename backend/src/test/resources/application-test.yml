@@ -1,0 +1,11 @@
+# local 프로필의 localhost:5433 설정이 새어들지 않게 프로필을 분리한다.
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+logging:
+  level:
+    org.hibernate.SQL: debug
