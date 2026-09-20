@@ -3,8 +3,8 @@ package com.kassa.common.error
 import org.springframework.http.HttpStatus
 
 /**
- * 에러 코드 체계.
- * code 접두사는 도메인 이름으로 둔다.
+ * 에러 코드 체계. 접두사는 도메인 이름으로 둔다.
+ * 스프링 예외는 COMMON_상태값 으로 GlobalExceptionHandler 에서 만든다.
  */
 enum class ErrorCode(
     val status: HttpStatus,

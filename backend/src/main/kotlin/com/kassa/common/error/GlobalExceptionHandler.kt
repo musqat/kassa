@@ -1,11 +1,15 @@
 package com.kassa.common.error
 
+import com.kassa.common.trace.REQUEST_ID
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.http.ProblemDetail
+import org.springframework.web.ErrorResponse
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+
+const val CODE = "code"
 
 private val log = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 
@@ -27,7 +31,7 @@ class GlobalExceptionHandler {
 
     /**
      * @Valid 검증 실패. 어느 필드가 틀렸는지 detail 에 담으면 쓰기 편하다.
-     * 필드 정보는 e.bindingResult.fieldErrors 에 있다.
+     * 필드 정보는 e.bindingResult.fieldErrors
      */
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidation(e: MethodArgumentNotValidException): ProblemDetail {
@@ -37,11 +41,20 @@ class GlobalExceptionHandler {
         return problemOf(ErrorCode.INVALID_REQUEST, detail.ifEmpty { ErrorCode.INVALID_REQUEST.message })
     }
 
+
     /**
      * 예상하지 못한 실패. 여기서만 스택 트레이스를 남긴다.
      */
     @ExceptionHandler(Exception::class)
     fun handleUnexpected(e: Exception): ProblemDetail {
+        if (e is ErrorResponse) {
+            log.warn("{} {}", e.statusCode, e.message)
+            return e.body.apply {
+                setProperty(CODE, "COMMON_${e.statusCode.value()}")
+                setProperty(REQUEST_ID, MDC.get(REQUEST_ID))
+            }
+        }
+
         log.error("처리하지 못한 예외", e)
         return problemOf(ErrorCode.INTERNAL_ERROR)
     }
@@ -52,8 +65,8 @@ class GlobalExceptionHandler {
      */
     private fun problemOf(errorCode: ErrorCode, detail: String = errorCode.message): ProblemDetail {
         val problem = ProblemDetail.forStatusAndDetail(errorCode.status, detail)
-        problem.setProperty("code", errorCode.code)
-        problem.setProperty("requestId", MDC.get("requestId"))
+        problem.setProperty(CODE, errorCode.code)
+        problem.setProperty(REQUEST_ID, MDC.get(REQUEST_ID))
         return problem
     }
 
