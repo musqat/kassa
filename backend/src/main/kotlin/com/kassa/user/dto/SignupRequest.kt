@@ -20,6 +20,6 @@ data class SignupRequest(
     @field:Size(max = 50)
     val name: String,
 ) {
-    // 비밀번호가 로그에 찍히지 않게 가린다
+    // 비밀번호는 가린다
     override fun toString() = "SignupRequest(email=$email, password=***, name=$name)"
 }

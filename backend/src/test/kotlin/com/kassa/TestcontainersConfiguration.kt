@@ -12,8 +12,7 @@ class TestcontainersConfiguration {
 	@Bean
 	@ServiceConnection
 	fun postgresContainer(): PostgreSQLContainer {
-		// 로컬 docker-compose·배포(Neon)와 같은 메이저로 맞춘다.
-		// latest 를 쓰면 시점에 따라 테스트 대상 DB 가 달라진다.
+		// 로컬·배포와 같은 메이저
 		return PostgreSQLContainer(DockerImageName.parse("postgres:17-alpine"))
 	}
 

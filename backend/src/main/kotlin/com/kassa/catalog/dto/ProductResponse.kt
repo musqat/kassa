@@ -3,12 +3,7 @@ package com.kassa.catalog.dto
 import com.kassa.catalog.domain.Product
 import com.kassa.catalog.domain.ProductStatus
 
-/**
- * 상품 응답.
- *
- * stock 과 reservedStock 은 넣지 않는다. 재고 수량은 매출 추정 근거가 되고
- * 판매 가능 여부는 status 로 충분하다.
- */
+// 재고 수량은 내보내지 않는다
 data class ProductResponse(
     val id: Long,
     val categoryId: Long,

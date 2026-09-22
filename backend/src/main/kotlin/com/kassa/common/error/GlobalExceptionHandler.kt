@@ -20,19 +20,14 @@ private val log = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
-    /**
-     * 예상된 실패
-     */
+    /** 예상된 실패 */
     @ExceptionHandler(BusinessException::class)
     fun handleBusiness(e: BusinessException): ProblemDetail {
         log.warn("{} {}", e.errorCode.code, e.message)
         return problemOf(e.errorCode, e.message)
     }
 
-    /**
-     * @Valid 검증 실패. 어느 필드가 틀렸는지 detail 에 담으면 쓰기 편하다.
-     * 필드 정보는 e.bindingResult.fieldErrors
-     */
+    /** @Valid 검증 실패 */
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidation(e: MethodArgumentNotValidException): ProblemDetail {
         val detail = e.bindingResult.fieldErrors
@@ -59,10 +54,7 @@ class GlobalExceptionHandler {
         return problemOf(ErrorCode.INTERNAL_ERROR)
     }
 
-    /**
-     * ErrorCode 를 ProblemDetail 로 옮기는 공통 부분.
-     * 세 핸들러가 같은 모양을 만들도록 한 곳에 둔다.
-     */
+    /** ErrorCode 를 ProblemDetail 로 옮긴다 */
     private fun problemOf(errorCode: ErrorCode, detail: String = errorCode.message): ProblemDetail {
         val problem = ProblemDetail.forStatusAndDetail(errorCode.status, detail)
         problem.setProperty(CODE, errorCode.code)

@@ -7,6 +7,7 @@ import com.kassa.user.dto.SignupRequest
 import com.kassa.user.dto.UserResponse
 import com.kassa.user.repository.UserRepository
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -30,5 +31,13 @@ class UserService(
             throw BusinessException(ErrorCode.EMAIL_DUPLICATED)
         }
         return UserResponse.from(saved)
+    }
+
+    // 회원이 없으면 401
+    @Transactional(readOnly = true)
+    fun me(userId: Long): UserResponse {
+        val user = userRepository.findByIdOrNull(userId)?:
+            throw BusinessException(ErrorCode.UNAUTHORIZED)
+        return UserResponse.from(user)
     }
 }
