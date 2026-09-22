@@ -16,6 +16,9 @@ enum class ErrorCode(
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_999", "서버 오류가 발생했습니다"),
 
     // 카탈로그 에러
-    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "CATALOG_001", "상품을 찾을 수 없습니다");
+    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "CATALOG_001", "상품을 찾을 수 없습니다"),
+
+    // 회원 에러
+    EMAIL_DUPLICATED(HttpStatus.CONFLICT, "USER_001", "이미 가입된 이메일입니다");
 
 }
