@@ -8,5 +8,5 @@ import org.springframework.test.context.ActiveProfiles
 // Testcontainers 로 PostgreSQL 을 띄운다
 @SpringBootTest
 @ActiveProfiles("test")
-@Import(TestcontainersConfiguration::class)
+@Import(TestcontainersConfiguration::class, FakeEmailSenderConfig::class)
 abstract class IntegrationTest

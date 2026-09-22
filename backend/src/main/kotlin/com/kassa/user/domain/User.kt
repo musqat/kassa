@@ -8,11 +8,12 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.time.Duration
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
-// user 는 PostgreSQL 예약어
 @Entity
 @Table(name = "users")
 class User(
+    loginId: String,
     email: String,
     passwordHash: String,
     name: String,
@@ -20,6 +21,9 @@ class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
+        protected set
+
+    var loginId: String = loginId
         protected set
 
     var email: String = email.trim().lowercase()
@@ -35,6 +39,15 @@ class User(
         protected set
 
     var lockedUntil: Instant? = null
+        protected set
+
+    var emailVerifiedAt: Instant? = null
+        protected set
+
+    var tokenValidAfter: Instant? = null
+        protected set
+
+    var deletedAt: Instant? = null
         protected set
 
     @Column(insertable = false, updatable = false)
@@ -60,9 +73,45 @@ class User(
         }
     }
 
+    fun remainingAttempts(): Int = MAX_FAILURES - loginFailCount
+
     fun recordLoginSuccess() {
         loginFailCount = 0
         lockedUntil = null
+    }
+
+    fun isEmailVerified(): Boolean {
+        return emailVerifiedAt != null
+    }
+
+    fun verifyEmail(now: Instant) {
+        if (emailVerifiedAt == null) {
+            emailVerifiedAt = now
+        }
+    }
+
+    /** 미인증 상태에서 다시 가입하면 아이디·비밀번호·이름을 새 값으로 바꾼다 */
+    fun overwriteSignup(loginId: String, passwordHash: String, name: String) {
+        this.loginId = loginId
+        this.passwordHash = passwordHash
+        this.name = name
+    }
+
+    /** 재설정 링크로 비밀번호를 바꾼다 */
+    fun resetPassword(passwordHash: String, now: Instant) {
+        this.passwordHash = passwordHash
+        recordLoginSuccess()
+        verifyEmail(now)
+        tokenValidAfter = now.truncatedTo(ChronoUnit.SECONDS)
+    }
+
+    /** 행은 남기고 개인정보만 지운다 */
+    fun withdraw(now: Instant) {
+        loginId = "deleted_" + id!!
+        email = "deleted-" + id!! + "@invalid"
+        name = "탈퇴회원"
+        passwordHash = "!"
+        deletedAt = now
     }
 
     companion object {

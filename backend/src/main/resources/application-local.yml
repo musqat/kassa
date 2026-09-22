@@ -3,10 +3,20 @@ spring:
     url: jdbc:postgresql://localhost:5433/kassa
     username: kassa
     password: kassa
+  mail:
+    host: localhost
+    port: 1025
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
 
 app:
   jwt:
-    secret: local-only-secret-key-at-least-32-bytes!!
+    # 로컬·테스트 전용. 배포는 환경 변수 JWT_SECRET
+    secret: kassa-local-dev-secret-not-a-real-key
   cors:
     origins:
       - http://localhost:3000
+  mail:
+    from: no-reply@kassa.local
+  frontend-url: http://localhost:3000

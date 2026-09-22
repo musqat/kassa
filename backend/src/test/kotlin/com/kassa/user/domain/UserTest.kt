@@ -13,7 +13,7 @@ class UserTest {
     private val later = t0.plus(Duration.ofMinutes(16))                          // 00:16:00
 
 
-    private fun user() = User("A@Example.com", "hash", "홍길동")
+    private fun user() = User("hong01", "A@Example.com", "hash", "홍길동")
 
     private fun User.failTimes(n: Int, at: Instant = t0) = repeat(n) { recordLoginFailure(at) }
 
