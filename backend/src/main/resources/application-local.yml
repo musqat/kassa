@@ -3,3 +3,8 @@ spring:
     url: jdbc:postgresql://localhost:5433/kassa
     username: kassa
     password: kassa
+
+app:
+  cors:
+    origins:
+      - http://localhost:3000
