@@ -21,17 +21,27 @@ class UserService(
     @Transactional
     fun signUp(request: SignupRequest): UserResponse {
         val email = request.email.trim().lowercase()
+        if (userRepository.existsByLoginId(request.loginId)) throw BusinessException(ErrorCode.LOGIN_ID_DUPLICATED)
         if (userRepository.existsByEmail(email)) throw BusinessException(ErrorCode.EMAIL_DUPLICATED)
 
-        val user = User(email, passwordEncoder.encode(request.password)!!, request.name)
+        val user = User(request.loginId, email, passwordEncoder.encode(request.password)!!, request.name)
 
-        val saved = try{
+        val saved = try {
             userRepository.saveAndFlush(user)
-        } catch (e : DataIntegrityViolationException){
-            throw BusinessException(ErrorCode.EMAIL_DUPLICATED)
+        } catch (e: DataIntegrityViolationException) {
+            // 동시에 같은 값으로 가입하면 유니크 제약에서 걸린다
+            val code = if (e.message?.contains("uk_users_login_id") == true) {
+                ErrorCode.LOGIN_ID_DUPLICATED
+            } else {
+                ErrorCode.EMAIL_DUPLICATED
+            }
+            throw BusinessException(code)
         }
         return UserResponse.from(saved)
     }
+
+    @Transactional(readOnly = true)
+    fun isLoginIdAvailable(loginId: String): Boolean = !userRepository.existsByLoginId(loginId)
 
     // 회원이 없으면 401
     @Transactional(readOnly = true)

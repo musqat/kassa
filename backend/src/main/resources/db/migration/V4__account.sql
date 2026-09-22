@@ -1,3 +1,8 @@
+ALTER TABLE users ADD COLUMN login_id VARCHAR(20);
+UPDATE users SET login_id = 'user' || id;
+ALTER TABLE users ALTER COLUMN login_id SET NOT NULL;
+ALTER TABLE users ADD CONSTRAINT uk_users_login_id UNIQUE (login_id);
+
 ALTER TABLE users ADD COLUMN email_verified_at TIMESTAMPTZ;
 ALTER TABLE users ADD COLUMN token_valid_after TIMESTAMPTZ;
 ALTER TABLE users ADD COLUMN deleted_at        TIMESTAMPTZ;

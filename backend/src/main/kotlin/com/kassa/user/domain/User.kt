@@ -13,6 +13,7 @@ import java.time.Instant
 @Entity
 @Table(name = "users")
 class User(
+    loginId: String,
     email: String,
     passwordHash: String,
     name: String,
@@ -20,6 +21,9 @@ class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
+        protected set
+
+    var loginId: String = loginId
         protected set
 
     var email: String = email.trim().lowercase()
@@ -59,6 +63,8 @@ class User(
             lockedUntil = now.plus(LOCK_DURATION)
         }
     }
+
+    fun remainingAttempts(): Int = MAX_FAILURES - loginFailCount
 
     fun recordLoginSuccess() {
         loginFailCount = 0

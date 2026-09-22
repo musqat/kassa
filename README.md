@@ -49,6 +49,10 @@ kassa/
 |---|---|---|
 | GET | `/api/products?categoryId=` | 상품 목록 |
 | GET | `/api/products/{id}` | 상품 단건 |
+| POST | `/api/users` | 회원가입 |
+| GET | `/api/users/login-id-check?loginId=` | 아이디 중복확인 |
+| POST | `/api/auth/login` | 로그인. 아이디와 비밀번호로 토큰 발급 |
+| GET | `/api/users/me` | 내 정보. `Authorization: Bearer` 필요 |
 
 ```json
 {

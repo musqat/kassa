@@ -20,10 +20,13 @@ enum class ErrorCode(
 
     // 회원 에러
     EMAIL_DUPLICATED(HttpStatus.CONFLICT, "USER_001", "이미 가입된 이메일입니다"),
-    LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "USER_002", "이메일 또는 비밀번호가 맞지 않습니다"),
+    LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "USER_002", "비밀번호가 맞지 않습니다"),
     EMAIL_NOT_VERIFIED(HttpStatus.FORBIDDEN, "USER_003", "이메일 인증이 필요합니다"),
     INVALID_EMAIL_TOKEN(HttpStatus.BAD_REQUEST, "USER_004", "링크가 만료됐거나 이미 사용됐습니다"),
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "USER_005", "비밀번호가 맞지 않습니다"),
+    LOGIN_ID_NOT_FOUND(HttpStatus.UNAUTHORIZED, "USER_006", "존재하지 않는 아이디입니다"),
+    ACCOUNT_LOCKED(HttpStatus.LOCKED, "USER_007", "로그인 시도가 많아 잠시 제한됩니다"),
+    LOGIN_ID_DUPLICATED(HttpStatus.CONFLICT, "USER_008", "이미 사용 중인 아이디입니다"),
 
     // 인증 에러
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH_001", "로그인이 필요합니다"),

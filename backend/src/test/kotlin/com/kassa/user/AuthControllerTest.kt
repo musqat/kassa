@@ -36,13 +36,13 @@ class AuthControllerTest : IntegrationTest() {
     fun setUp() {
         userRepository.deleteAll()
         clock.reset()
-        user = userRepository.save(User("a@example.com", passwordEncoder.encode("abcd1234")!!, "홍길동"))
+        user = userRepository.save(User("hong01", "a@example.com", passwordEncoder.encode("abcd1234")!!, "홍길동"))
     }
 
-    private fun login(email: String = "a@example.com", password: String = "abcd1234"): ResultActionsDsl =
+    private fun login(loginId: String = "hong01", password: String = "abcd1234"): ResultActionsDsl =
         mockMvc.post("/api/auth/login") {
             contentType = MediaType.APPLICATION_JSON
-            content = """{"email":"$email","password":"$password"}"""
+            content = """{"loginId":"$loginId","password":"$password"}"""
         }
 
     private fun me(token: String? = null): ResultActionsDsl =
@@ -78,36 +78,40 @@ class AuthControllerTest : IntegrationTest() {
     }
 
     @Test
-    fun `틀린 비밀번호는 401 USER_002`() {
+    fun `틀린 비밀번호는 401 USER_002 와 남은 횟수`() {
         login(password = "wrong123").andExpect {
             status { isUnauthorized() }
-            jsonPath("$.code") { value("USER_002")}
+            jsonPath("$.code") { value("USER_002") }
+            jsonPath("$.detail") { value("비밀번호가 맞지 않습니다. 4회 더 틀리면 15분간 로그인이 제한됩니다") }
         }
     }
 
     @Test
-    fun `없는 이메일도 같은 응답이다`() {
-        login(email = "nobody@example.com").andExpect {
+    fun `없는 아이디는 401 USER_006`() {
+        login(loginId = "nobody").andExpect {
             status { isUnauthorized() }
-            jsonPath("$.code") { value("USER_002")}
+            jsonPath("$.code") { value("USER_006") }
         }
     }
 
     @Test
-    fun `5회 틀리면 맞는 비밀번호도 막힌다`() {
-        repeat(5){ login(password = "wrong1234")}
+    fun `5회째 틀리면 423 으로 잠긴다`() {
+        repeat(4) { login(password = "wrong1234") }
+        login(password = "wrong1234").andExpect {
+            status { isLocked() }
+            jsonPath("$.code") { value("USER_007") }
+            jsonPath("$.detail") { value("로그인 시도가 많아 제한됐습니다. 15분 뒤 다시 시도하세요") }
+        }
+    }
+
+    @Test
+    fun `잠긴 동안에는 맞는 비밀번호도 423`() {
+        repeat(5) { login(password = "wrong1234") }
+        clock.advance(Duration.ofMinutes(10))
         login().andExpect {
-            status { isUnauthorized() }
-            jsonPath("$.code") {value("USER_002")}
-        }
-    }
-
-    @Test
-    fun `없는 이메일은 여러 번 틀려도 응답이 같다`() {
-        repeat(5) { login(email = "nobody@example.com") }
-        login(email = "nobody@example.com").andExpect {
-            status { isUnauthorized() }
-            jsonPath("$.code") {value("USER_002")}
+            status { isLocked() }
+            jsonPath("$.code") { value("USER_007") }
+            jsonPath("$.detail") { value("로그인 시도가 많아 제한됐습니다. 5분 뒤 다시 시도하세요") }
         }
     }
 

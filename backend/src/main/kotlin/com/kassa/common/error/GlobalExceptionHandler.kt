@@ -8,6 +8,7 @@ import org.springframework.web.ErrorResponse
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.method.annotation.HandlerMethodValidationException
 
 const val CODE = "code"
 
@@ -32,6 +33,16 @@ class GlobalExceptionHandler {
     fun handleValidation(e: MethodArgumentNotValidException): ProblemDetail {
         val detail = e.bindingResult.fieldErrors
             .joinToString(", ") { "${it.field}: ${it.defaultMessage}" }
+        log.warn("검증 실패 {}", detail)
+        return problemOf(ErrorCode.INVALID_REQUEST, detail.ifEmpty { ErrorCode.INVALID_REQUEST.message })
+    }
+
+    /** 요청 파라미터 검증 실패 */
+    @ExceptionHandler(HandlerMethodValidationException::class)
+    fun handleParameterValidation(e: HandlerMethodValidationException): ProblemDetail {
+        val detail = e.parameterValidationResults
+            .flatMap { result -> result.resolvableErrors.map { "${result.methodParameter.parameterName}: ${it.defaultMessage}" } }
+            .joinToString(", ")
         log.warn("검증 실패 {}", detail)
         return problemOf(ErrorCode.INVALID_REQUEST, detail.ifEmpty { ErrorCode.INVALID_REQUEST.message })
     }
