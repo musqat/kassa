@@ -17,7 +17,7 @@ CREATE TABLE email_token (
     created_at  TIMESTAMPTZ  NOT NULL,
 
     CONSTRAINT uk_email_token_hash UNIQUE (token_hash),
-    CONSTRAINT ck_email_token_purpose CHECK (purpose IN ('VERIFY_EMAIL', 'RESET_PASSWORD'))
+    CONSTRAINT ck_email_token_purpose CHECK (purpose IN ('VERIFY_EMAIL', 'RESET_PASSWORD', 'FIND_LOGIN_ID'))
 );
 
 CREATE INDEX ix_email_token_user_purpose ON email_token (user_id, purpose);

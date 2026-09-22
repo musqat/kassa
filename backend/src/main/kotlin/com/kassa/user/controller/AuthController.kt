@@ -3,7 +3,9 @@ package com.kassa.user.controller
 import com.kassa.user.dto.EmailRequest
 import com.kassa.user.dto.EmailTokenRequest
 import com.kassa.user.dto.LoginRequest
+import com.kassa.user.dto.PasswordResetRequest
 import com.kassa.user.dto.TokenResponse
+import com.kassa.user.service.AccountRecoveryService
 import com.kassa.user.service.AuthService
 import com.kassa.user.service.EmailVerificationService
 import jakarta.validation.Valid
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 class AuthController(
     private val authService: AuthService,
     private val emailVerificationService: EmailVerificationService,
+    private val accountRecoveryService: AccountRecoveryService,
 ) {
 
     @PostMapping("/login")
@@ -35,5 +38,23 @@ class AuthController(
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun confirmVerification(@Valid @RequestBody request: EmailTokenRequest) {
         emailVerificationService.confirm(request.token)
+    }
+
+    @PostMapping("/login-id/find")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    fun findLoginId(@Valid @RequestBody request: EmailRequest) {
+        accountRecoveryService.sendLoginId(request.email)
+    }
+
+    @PostMapping("/password-reset")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    fun requestPasswordReset(@Valid @RequestBody request: EmailRequest) {
+        accountRecoveryService.sendPasswordReset(request.email)
+    }
+
+    @PostMapping("/password-reset/confirm")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun resetPassword(@Valid @RequestBody request: PasswordResetRequest) {
+        accountRecoveryService.resetPassword(request.token, request.newPassword)
     }
 }

@@ -8,6 +8,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.time.Duration
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 @Entity
 @Table(name = "users")
@@ -84,7 +85,7 @@ class User(
     }
 
     fun verifyEmail(now: Instant) {
-        if (emailVerifiedAt == null){
+        if (emailVerifiedAt == null) {
             emailVerifiedAt = now
         }
     }
@@ -94,6 +95,14 @@ class User(
         this.loginId = loginId
         this.passwordHash = passwordHash
         this.name = name
+    }
+
+    /** 재설정 링크로 비밀번호를 바꾼다 */
+    fun resetPassword(passwordHash: String, now: Instant) {
+        this.passwordHash = passwordHash
+        recordLoginSuccess()
+        verifyEmail(now)
+        tokenValidAfter = now.truncatedTo(ChronoUnit.SECONDS)
     }
 
     companion object {

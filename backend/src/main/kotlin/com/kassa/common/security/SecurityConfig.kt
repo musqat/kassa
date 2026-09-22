@@ -29,6 +29,9 @@ class SecurityConfig(
                 authorize(HttpMethod.POST, "/api/auth/login", permitAll)
                 authorize(HttpMethod.POST, "/api/auth/email-verification", permitAll)
                 authorize(HttpMethod.POST, "/api/auth/email-verification/confirm", permitAll)
+                authorize(HttpMethod.POST, "/api/auth/login-id/find", permitAll)
+                authorize(HttpMethod.POST, "/api/auth/password-reset", permitAll)
+                authorize(HttpMethod.POST, "/api/auth/password-reset/confirm", permitAll)
                 authorize("/actuator/health/**", permitAll)
                 authorize(anyRequest, authenticated)
             }

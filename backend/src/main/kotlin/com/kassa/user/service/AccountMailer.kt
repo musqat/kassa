@@ -10,6 +10,30 @@ class AccountMailer(
     @Value("\${app.frontend-url}") private val frontendUrl: String,
 ) {
 
+    fun sendLoginId(to: String, loginId: String) {
+        emailSender.send(
+            to = to,
+            subject = "아이디 안내",
+            body = """
+                |이 이메일로 가입한 아이디는 $loginId 입니다.
+                |
+                |$frontendUrl/login
+            """.trimMargin(),
+        )
+    }
+
+    fun sendPasswordReset(to: String, rawToken: String) {
+        emailSender.send(
+            to = to,
+            subject = "비밀번호 재설정",
+            body = """
+                |아래 링크에서 새 비밀번호를 정할 수 있습니다. 링크는 30분 동안 쓸 수 있습니다.
+                |
+                |$frontendUrl/reset-password?token=$rawToken
+            """.trimMargin(),
+        )
+    }
+
     fun sendVerification(to: String, rawToken: String) {
         emailSender.send(
             to = to,
