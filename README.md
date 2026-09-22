@@ -52,6 +52,8 @@ kassa/
 | POST | `/api/users` | 회원가입 |
 | GET | `/api/users/login-id-check?loginId=` | 아이디 중복확인 |
 | POST | `/api/auth/login` | 로그인. 아이디와 비밀번호로 토큰 발급 |
+| POST | `/api/auth/email-verification` | 인증 메일 재전송 |
+| POST | `/api/auth/email-verification/confirm` | 메일 링크의 토큰으로 이메일 인증 |
 | GET | `/api/users/me` | 내 정보. `Authorization: Bearer` 필요 |
 
 ```json

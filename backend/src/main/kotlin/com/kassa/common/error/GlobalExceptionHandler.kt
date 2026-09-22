@@ -4,11 +4,13 @@ import com.kassa.common.trace.REQUEST_ID
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.http.ProblemDetail
+import org.springframework.mail.MailException
 import org.springframework.web.ErrorResponse
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.HandlerMethodValidationException
+import kotlin.text.ifEmpty
 
 const val CODE = "code"
 
@@ -48,8 +50,16 @@ class GlobalExceptionHandler {
     }
 
 
+    /** 메일 서버 연결·인증 실패 */
+    @ExceptionHandler(MailException::class)
+    fun handleMail(e: MailException): ProblemDetail {
+        log.error("메일 발송 실패", e)
+
+        return problemOf(ErrorCode.MAIL_SEND_FAILED)
+    }
+
     /**
-     * 예상하지 못한 실패. 여기서만 스택 트레이스를 남긴다.
+     * 예상하지 못한 실패. 스택 트레이스를 남긴다.
      */
     @ExceptionHandler(Exception::class)
     fun handleUnexpected(e: Exception): ProblemDetail {

@@ -9,7 +9,6 @@ import jakarta.persistence.Table
 import java.time.Duration
 import java.time.Instant
 
-// user 는 PostgreSQL 예약어
 @Entity
 @Table(name = "users")
 class User(
@@ -41,6 +40,15 @@ class User(
     var lockedUntil: Instant? = null
         protected set
 
+    var emailVerifiedAt: Instant? = null
+        protected set
+
+    var tokenValidAfter: Instant? = null
+        protected set
+
+    var deletedAt: Instant? = null
+        protected set
+
     @Column(insertable = false, updatable = false)
     var createdAt: Instant = Instant.now()
         protected set
@@ -69,6 +77,23 @@ class User(
     fun recordLoginSuccess() {
         loginFailCount = 0
         lockedUntil = null
+    }
+
+    fun isEmailVerified(): Boolean {
+        return emailVerifiedAt != null
+    }
+
+    fun verifyEmail(now: Instant) {
+        if (emailVerifiedAt == null){
+            emailVerifiedAt = now
+        }
+    }
+
+    /** 미인증 상태에서 다시 가입하면 아이디·비밀번호·이름을 새 값으로 바꾼다 */
+    fun overwriteSignup(loginId: String, passwordHash: String, name: String) {
+        this.loginId = loginId
+        this.passwordHash = passwordHash
+        this.name = name
     }
 
     companion object {

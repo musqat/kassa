@@ -27,9 +27,10 @@ class UserController(
 ) {
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    fun signUp(@Valid @RequestBody request: SignupRequest): UserResponse =
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    fun signUp(@Valid @RequestBody request: SignupRequest) {
         userService.signUp(request)
+    }
 
     @GetMapping("/login-id-check")
     fun loginIdAvailability(

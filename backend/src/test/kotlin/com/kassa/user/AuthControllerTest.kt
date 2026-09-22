@@ -5,6 +5,7 @@ import com.kassa.support.IntegrationTest
 import com.kassa.support.MutableClock
 import com.kassa.support.MutableClockConfig
 import com.kassa.user.domain.User
+import com.kassa.user.repository.EmailTokenRepository
 import com.kassa.user.repository.UserRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -23,20 +24,40 @@ import java.time.Instant
 @AutoConfigureMockMvc
 @Import(MutableClockConfig::class)
 class AuthControllerTest : IntegrationTest() {
+    @Autowired
+    private lateinit var mockMvc: MockMvc
 
-    @Autowired private lateinit var mockMvc: MockMvc
-    @Autowired private lateinit var userRepository: UserRepository
-    @Autowired private lateinit var passwordEncoder: PasswordEncoder
-    @Autowired private lateinit var tokenIssuer: TokenIssuer
-    @Autowired private lateinit var clock: MutableClock
+    @Autowired
+    private lateinit var userRepository: UserRepository
+
+    @Autowired
+    private lateinit var passwordEncoder: PasswordEncoder
+
+    @Autowired
+    private lateinit var tokenIssuer: TokenIssuer
+
+    @Autowired
+    private lateinit var clock: MutableClock
+
+    @Autowired
+    private lateinit var emailTokenRepository: EmailTokenRepository
 
     private lateinit var user: User
 
     @BeforeEach
     fun setUp() {
+        emailTokenRepository.deleteAll()
         userRepository.deleteAll()
         clock.reset()
-        user = userRepository.save(User("hong01", "a@example.com", passwordEncoder.encode("abcd1234")!!, "홍길동"))
+        user = userRepository.save(
+            User(
+                "hong01",
+                "a@example.com",
+                passwordEncoder.encode("abcd1234")!!,
+                "홍길동"
+            ).apply {verifyEmail(Instant.now())}
+
+        )
     }
 
     private fun login(loginId: String = "hong01", password: String = "abcd1234"): ResultActionsDsl =
@@ -73,7 +94,7 @@ class AuthControllerTest : IntegrationTest() {
         val token = tokenIssuer.issue(user.id!!, Instant.now()).value
         me(token).andExpect {
             status { isOk() }
-            jsonPath("$.email") {value("a@example.com")}
+            jsonPath("$.email") { value("a@example.com") }
         }
     }
 
@@ -129,18 +150,39 @@ class AuthControllerTest : IntegrationTest() {
         val expiredToken = tokenIssuer.issue(user.id!!, Instant.now().minus(Duration.ofHours(3))).value
         me(token = expiredToken).andExpect {
             status { isUnauthorized() }
-            jsonPath("$.code") {value("AUTH_001")}
+            jsonPath("$.code") { value("AUTH_001") }
         }
-
     }
 
     @Test
     fun `토큰이 있어도 상품 조회는 된다`() {
         val token = tokenIssuer.issue(user.id!!, Instant.now()).value
-        mockMvc.get("/api/products"){
+        mockMvc.get("/api/products") {
             header("Authorization", "Bearer $token")
         }.andExpect {
             status { isOk() }
+        }
+    }
+
+    // 미인증 회원. setUp 의 회원과 달리 verifyEmail 을 부르지 않는다
+    private fun saveUnverified(): User =
+        userRepository.save(User("hong02", "b@example.com", passwordEncoder.encode("abcd1234")!!, "김철수"))
+
+    @Test
+    fun `미인증 회원은 맞는 비밀번호여도 403 USER_003`() {
+        saveUnverified()
+        login(loginId = "hong02").andExpect {
+            status { isForbidden() }
+            jsonPath("$.code") { value("USER_003") }
+        }
+    }
+
+    @Test
+    fun `미인증 회원도 틀린 비밀번호는 401 USER_002`() {
+        saveUnverified()
+        login(loginId = "hong02", password = "wrong1234").andExpect {
+            status { isUnauthorized() }
+            jsonPath("$.code") { value("USER_002") }
         }
     }
 }

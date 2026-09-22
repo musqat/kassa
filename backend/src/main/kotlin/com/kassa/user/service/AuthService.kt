@@ -21,7 +21,6 @@ class AuthService(
     private val tokenIssuer: TokenIssuer,
     private val clock: Clock,
 ) {
-
     // 실패로 끝나도 실패 횟수·잠금은 커밋한다
     @Transactional(noRollbackFor = [BusinessException::class])
     fun login(request: LoginRequest): TokenResponse {
@@ -39,6 +38,11 @@ class AuthService(
                 ErrorCode.LOGIN_FAILED,
                 "비밀번호가 맞지 않습니다. ${user.remainingAttempts()}회 더 틀리면 15분간 로그인이 제한됩니다",
             )
+        }
+
+        if (!user.isEmailVerified()) {
+            user.recordLoginSuccess()
+            throw BusinessException(ErrorCode.EMAIL_NOT_VERIFIED)
         }
 
         user.recordLoginSuccess()

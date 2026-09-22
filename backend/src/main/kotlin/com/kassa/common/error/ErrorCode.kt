@@ -28,6 +28,9 @@ enum class ErrorCode(
     ACCOUNT_LOCKED(HttpStatus.LOCKED, "USER_007", "로그인 시도가 많아 잠시 제한됩니다"),
     LOGIN_ID_DUPLICATED(HttpStatus.CONFLICT, "USER_008", "이미 사용 중인 아이디입니다"),
 
+    // 메일 에러
+    MAIL_SEND_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "MAIL_001", "메일을 보내지 못했습니다. 잠시 뒤 다시 시도하세요"),
+
     // 인증 에러
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH_001", "로그인이 필요합니다"),
     FORBIDDEN(HttpStatus.FORBIDDEN, "AUTH_002", "권한이 없습니다");

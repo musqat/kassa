@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.security.MessageDigest
 import java.security.SecureRandom
+import java.time.Duration
 import java.time.Instant
 import java.util.Base64
 import java.util.HexFormat
@@ -55,8 +56,26 @@ class EmailTokenService(
         return token.userId
     }
 
+    /** 1분 안에 발급했거나 1시간 안에 5개를 발급했으면 true */
+    @Transactional(readOnly = true)
+    fun isRateLimited(userId: Long, purpose: EmailTokenPurpose, now: Instant): Boolean {
+        val last = emailTokenRepository.findFirstByUserIdAndPurposeOrderByCreatedAtDesc(userId, purpose) ?: return false
+        if (last.createdAt.plus(RESEND_INTERVAL).isAfter(now)) return true
+
+        val issuedLastHour =
+            emailTokenRepository.countByUserIdAndPurposeAndCreatedAtAfter(userId, purpose, now.minus(HOURLY_WINDOW))
+
+        return issuedLastHour >= HOURLY_LIMIT
+    }
+
     private fun hash(raw: String): String {
         val digest = MessageDigest.getInstance("SHA-256").digest(raw.toByteArray())
         return HexFormat.of().formatHex(digest)
+    }
+
+    companion object {
+        val RESEND_INTERVAL: Duration = Duration.ofMinutes(1)
+        val HOURLY_WINDOW: Duration = Duration.ofHours(1)
+        const val HOURLY_LIMIT = 5
     }
 }
