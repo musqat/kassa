@@ -5,6 +5,8 @@ spring:
     password: kassa
 
 app:
+  jwt:
+    secret: local-only-secret-key-at-least-32-bytes!!
   cors:
     origins:
       - http://localhost:3000

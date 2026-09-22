@@ -5,13 +5,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 
-/**
- * 통합 테스트 공통 설정.
- *
- * Testcontainers 로 실제 PostgreSQL 을 띄운다.
- *
- * 스프링이 테스트 컨텍스트를 캐시하므로 컨테이너는 설정이 같은 테스트끼리 공유된다.
- */
+// Testcontainers 로 PostgreSQL 을 띄운다
 @SpringBootTest
 @ActiveProfiles("test")
 @Import(TestcontainersConfiguration::class)
