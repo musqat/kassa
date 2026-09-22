@@ -24,6 +24,12 @@ spring:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
 
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
 server:
   port: 8080
 

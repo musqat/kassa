@@ -45,20 +45,15 @@ kassa/
 
 <br>
 
-| 메서드 | 경로 | 설명 |
-|---|---|---|
-| GET | `/api/products?categoryId=` | 상품 목록 |
-| GET | `/api/products/{id}` | 상품 단건 |
-| POST | `/api/users` | 회원가입 |
-| GET | `/api/users/login-id-check?loginId=` | 아이디 중복확인 |
-| POST | `/api/auth/login` | 로그인. 아이디와 비밀번호로 토큰 발급 |
-| POST | `/api/auth/email-verification` | 인증 메일 재전송 |
-| POST | `/api/auth/email-verification/confirm` | 메일 링크의 토큰으로 이메일 인증 |
-| POST | `/api/auth/login-id/find` | 아이디 찾기. 메일로 아이디를 보낸다 |
-| POST | `/api/auth/password-reset` | 비밀번호 재설정 메일 요청 |
-| POST | `/api/auth/password-reset/confirm` | 링크의 토큰으로 새 비밀번호 설정 |
-| GET | `/api/users/me` | 내 정보. `Authorization: Bearer` 필요 |
-| DELETE | `/api/users/me` | 탈퇴. 비밀번호를 한 번 더 확인 |
+전체 목록과 요청·응답 모양은 Swagger UI 에서 본다. 로컬은 http://localhost:8080/swagger-ui.html, 문서 원본은 `/v3/api-docs`.
+
+| 묶음 | 내용 |
+|---|---|
+| 상품 | 목록, 단건 |
+| 회원 | 가입, 아이디 중복확인, 내 정보, 탈퇴 |
+| 인증 | 로그인, 이메일 인증·재전송, 아이디 찾기, 비밀번호 재설정 |
+
+자물쇠 버튼에 로그인으로 받은 토큰을 넣으면 인증이 필요한 API 도 화면에서 호출할 수 있다.
 
 ```json
 {

@@ -33,6 +33,9 @@ class SecurityConfig(
                 authorize(HttpMethod.POST, "/api/auth/password-reset", permitAll)
                 authorize(HttpMethod.POST, "/api/auth/password-reset/confirm", permitAll)
                 authorize("/actuator/health/**", permitAll)
+                authorize("/swagger-ui/**", permitAll)
+                authorize("/swagger-ui.html", permitAll)
+                authorize("/v3/api-docs/**", permitAll)
                 authorize(anyRequest, authenticated)
             }
             oauth2ResourceServer {
