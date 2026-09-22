@@ -105,6 +105,15 @@ class User(
         tokenValidAfter = now.truncatedTo(ChronoUnit.SECONDS)
     }
 
+    /** 행은 남기고 개인정보만 지운다 */
+    fun withdraw(now: Instant) {
+        loginId = "deleted_" + id!!
+        email = "deleted-" + id!! + "@invalid"
+        name = "탈퇴회원"
+        passwordHash = "!"
+        deletedAt = now
+    }
+
     companion object {
         const val MAX_FAILURES = 5
         val LOCK_DURATION: Duration = Duration.ofMinutes(15)

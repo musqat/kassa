@@ -36,7 +36,7 @@ class UserService(
 
         val idOwner = userRepository.findByLoginId(request.loginId)
         if (idOwner != null && idOwner.id != existing?.id) {
-            if(idOwner.isEmailVerified()){
+            if (idOwner.isEmailVerified()) {
                 throw BusinessException(ErrorCode.LOGIN_ID_DUPLICATED)
             }
 
@@ -71,7 +71,24 @@ class UserService(
         }
 
     @Transactional(readOnly = true)
-    fun isLoginIdAvailable(loginId: String): Boolean = !userRepository.existsByLoginIdAndEmailVerifiedAtIsNotNull(loginId)
+    fun isLoginIdAvailable(loginId: String): Boolean =
+        !userRepository.existsByLoginIdAndEmailVerifiedAtIsNotNull(loginId)
+
+    /** 비밀번호를 한 번 더 확인하고 개인정보를 지운다 */
+    @Transactional
+    fun withdraw(userId: Long, password: String) {
+        val now = Instant.now(clock)
+
+        val user = userRepository.findByIdOrNull(userId) ?: throw BusinessException(ErrorCode.UNAUTHORIZED)
+
+        if (!passwordEncoder.matches(password, user.passwordHash)) {
+            throw BusinessException(ErrorCode.PASSWORD_MISMATCH)
+        }
+
+        emailTokenRepository.deleteAllByUserId(userId)
+
+        user.withdraw(now)
+    }
 
     // 회원이 없으면 401
     @Transactional(readOnly = true)

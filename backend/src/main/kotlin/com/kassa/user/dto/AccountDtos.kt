@@ -24,3 +24,10 @@ data class PasswordResetRequest(
 ) {
     override fun toString() = "PasswordResetRequest(token=***, newPassword=***)"
 }
+
+data class WithdrawRequest(
+    @field:NotBlank
+    val password: String,
+) {
+    override fun toString() = "WithdrawRequest(password=***)"
+}
