@@ -1,12 +1,9 @@
 package com.kassa
 
+import com.kassa.support.IntegrationTest
 import org.junit.jupiter.api.Test
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Import
 
-@Import(TestcontainersConfiguration::class)
-@SpringBootTest
-class KassaApplicationTests {
+class KassaApplicationTests : IntegrationTest() {
 
 	@Test
 	fun contextLoads() {

@@ -4,6 +4,11 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+  mail:
+    host: localhost
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
 
 logging:
   level:
@@ -11,4 +16,7 @@ logging:
 
 app:
   jwt:
-    secret: test-only-secret-key-at-least-32-bytes!!!
+    secret: "nB1iklU1aHrfcQBRANWiLh7a+wwa35gzE1xsDRNg0tI="
+  mail:
+    from: no-reply@kassa.test
+  frontend-url: http://localhost:3000

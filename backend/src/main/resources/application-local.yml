@@ -3,10 +3,19 @@ spring:
     url: jdbc:postgresql://localhost:5433/kassa
     username: kassa
     password: kassa
+  mail:
+    host: localhost
+    port: 1025
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
 
 app:
   jwt:
-    secret: local-only-secret-key-at-least-32-bytes!!
+    secret: "nB1iklU1aHrfcQBRANWiLh7a+wwa35gzE1xsDRNg0tI="
   cors:
     origins:
       - http://localhost:3000
+  mail:
+    from: no-reply@kassa.local
+  frontend-url: http://localhost:3000

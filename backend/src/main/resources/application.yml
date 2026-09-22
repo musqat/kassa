@@ -15,6 +15,14 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: false
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 
 server:
   port: 8080
@@ -38,3 +46,6 @@ app:
     # 배포는 환경 변수 JWT_SECRET
     secret: ${JWT_SECRET}
     ttl: 2h
+  mail:
+    from: ${MAIL_FROM}
+  frontend-url: ${FRONTEND_URL}
