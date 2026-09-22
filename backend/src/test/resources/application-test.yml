@@ -16,7 +16,8 @@ logging:
 
 app:
   jwt:
-    secret: "nB1iklU1aHrfcQBRANWiLh7a+wwa35gzE1xsDRNg0tI="
+    # 로컬·테스트 전용. 배포는 환경 변수 JWT_SECRET
+    secret: kassa-test-secret-not-a-real-key-here
   mail:
     from: no-reply@kassa.test
   frontend-url: http://localhost:3000

@@ -12,7 +12,8 @@ spring:
 
 app:
   jwt:
-    secret: "nB1iklU1aHrfcQBRANWiLh7a+wwa35gzE1xsDRNg0tI="
+    # 로컬·테스트 전용. 배포는 환경 변수 JWT_SECRET
+    secret: kassa-local-dev-secret-not-a-real-key
   cors:
     origins:
       - http://localhost:3000
