@@ -54,7 +54,11 @@ kassa/
 | POST | `/api/auth/login` | 로그인. 아이디와 비밀번호로 토큰 발급 |
 | POST | `/api/auth/email-verification` | 인증 메일 재전송 |
 | POST | `/api/auth/email-verification/confirm` | 메일 링크의 토큰으로 이메일 인증 |
+| POST | `/api/auth/login-id/find` | 아이디 찾기. 메일로 아이디를 보낸다 |
+| POST | `/api/auth/password-reset` | 비밀번호 재설정 메일 요청 |
+| POST | `/api/auth/password-reset/confirm` | 링크의 토큰으로 새 비밀번호 설정 |
 | GET | `/api/users/me` | 내 정보. `Authorization: Bearer` 필요 |
+| DELETE | `/api/users/me` | 탈퇴. 비밀번호를 한 번 더 확인 |
 
 ```json
 {
