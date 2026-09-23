@@ -1,5 +1,6 @@
 package com.kassa.user.service
 
+import com.kassa.cart.repository.CartItemRepository
 import com.kassa.common.error.BusinessException
 import com.kassa.common.error.ErrorCode
 import com.kassa.user.domain.User
@@ -21,6 +22,7 @@ class UserService(
     private val passwordEncoder: PasswordEncoder,
     private val emailVerificationService: EmailVerificationService,
     private val emailTokenRepository: EmailTokenRepository,
+    private val cartItemRepository: CartItemRepository,
     private val clock: Clock,
 ) {
 
@@ -86,6 +88,7 @@ class UserService(
         }
 
         emailTokenRepository.deleteAllByUserId(userId)
+        cartItemRepository.deleteAllByUserId(userId)
 
         user.withdraw(now)
     }

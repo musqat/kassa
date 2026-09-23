@@ -1,6 +1,7 @@
 package com.kassa.user
 
 import com.kassa.common.security.TokenIssuer
+import com.kassa.cart.repository.CartItemRepository
 import com.kassa.support.IntegrationTest
 import com.kassa.support.MutableClock
 import com.kassa.support.MutableClockConfig
@@ -25,6 +26,9 @@ import java.time.Instant
 @Import(MutableClockConfig::class)
 class AuthControllerTest : IntegrationTest() {
     @Autowired
+    private lateinit var cartItemRepository: CartItemRepository
+
+    @Autowired
     private lateinit var mockMvc: MockMvc
 
     @Autowired
@@ -46,6 +50,7 @@ class AuthControllerTest : IntegrationTest() {
 
     @BeforeEach
     fun setUp() {
+        cartItemRepository.deleteAll()
         emailTokenRepository.deleteAll()
         userRepository.deleteAll()
         clock.reset()
