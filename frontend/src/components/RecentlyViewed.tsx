@@ -1,61 +1,69 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useSyncExternalStore } from "react";
+import { useEffect, useMemo } from "react";
+import { formatPrice } from "@/lib/format";
+import { parseRecent, recordRecent, useRecentRaw, type RecentProduct } from "@/lib/recent";
 
-const KEY = "kassa.recentProducts";
-const EVENT = "kassa.recent";
-const MAX = 3;
-
-function subscribe(onChange: () => void) {
-  window.addEventListener(EVENT, onChange);
-  window.addEventListener("storage", onChange);
-  return () => {
-    window.removeEventListener(EVENT, onChange);
-    window.removeEventListener("storage", onChange);
-  };
-}
-
-// 값이 바뀌었는지 비교할 수 있게 문자열 그대로 돌려준다
-function readRaw(): string {
-  return localStorage.getItem(KEY) ?? "[]";
-}
-
-function parse(raw: string): number[] {
-  try {
-    return JSON.parse(raw) as number[];
-  } catch {
-    return [];
-  }
-}
-
-// 서버를 거치지 않고 브라우저에만 쌓는다
-export function RecentlyViewed({ productId }: { productId: number }) {
-  const raw = useSyncExternalStore(subscribe, readRaw, () => "[]");
+// 상세 화면에서 쓴다. 지금 보는 상품을 기록하고 나머지를 보여준다
+export function RecentlyViewed({ product }: { product: RecentProduct }) {
+  const raw = useRecentRaw();
 
   useEffect(() => {
-    const kept = parse(readRaw()).filter((id) => id !== productId);
-    localStorage.setItem(KEY, JSON.stringify([productId, ...kept].slice(0, MAX)));
-    window.dispatchEvent(new Event(EVENT));
-  }, [productId]);
+    recordRecent(product);
+  }, [product]);
 
-  // 지금 보고 있는 상품은 목록에서 뺀다
-  const ids = useMemo(() => parse(raw).filter((id) => id !== productId), [raw, productId]);
+  const items = useMemo(
+    () => parseRecent(raw).filter((item) => item.id !== product.id),
+    [raw, product.id],
+  );
 
-  if (ids.length === 0) return null;
+  if (items.length === 0) return null;
 
   return (
     <section className="border-line flex flex-col gap-3 border-t pt-8">
       <h2 className="text-[13px] font-bold">최근 본 상품</h2>
-      <ul className="flex gap-4 text-sm">
-        {ids.map((id) => (
-          <li key={id}>
-            <Link href={`/products/${id}`} className="text-muted underline">
-              {id}번 상품
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <RecentList items={items} />
     </section>
+  );
+}
+
+// 목록 화면에서 쓴다. 기록하지 않고 보여주기만 한다
+export function RecentSidebar() {
+  const raw = useRecentRaw();
+  const items = useMemo(() => parseRecent(raw), [raw]);
+
+  return (
+    <aside className="order-2 flex flex-col gap-4 lg:order-3 lg:w-[200px] lg:shrink-0 lg:pt-1">
+      <h2 className="text-[13px] font-bold">최근 본 상품</h2>
+      {items.length === 0 ? (
+        <p className="text-muted text-[13px]">아직 본 상품이 없습니다</p>
+      ) : (
+        <RecentList items={items} />
+      )}
+    </aside>
+  );
+}
+
+function RecentList({ items }: { items: RecentProduct[] }) {
+  return (
+    <ul className="flex gap-4 overflow-x-auto lg:flex-col lg:gap-3 lg:overflow-visible">
+      {items.map((item) => (
+        <li key={item.id}>
+          <Link
+            href={`/products/${item.id}`}
+            className="flex w-[160px] items-center gap-3 lg:w-auto"
+          >
+            <span className="bg-surface text-subtle flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-field)] text-[10px]">
+              이미지
+            </span>
+            <span className="flex flex-col gap-0.5">
+              <span className="text-[13px] leading-snug">{item.name}</span>
+              <span className="text-muted text-xs">{formatPrice(item.price)}</span>
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }
