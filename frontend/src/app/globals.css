@@ -1,19 +1,26 @@
 @import "tailwindcss";
 
-/* 디자인 - 무채색 + 얇은 선, 모서리 없음 */
+/* 무채색, 얇은 선, 둥근 모서리 */
 @theme inline {
-  --color-ink: #111111;          /* 본문·강조·주 버튼 */
-  --color-muted: #5f5f5f;        /* 보조 글씨 */
-  --color-subtle: #6b6b6b;       /* 품절 글씨, 단계 표시 */
-  --color-line: #e7e5e4;         /* 구분선 */
-  --color-line-strong: #d6d3d1;  /* 입력칸·칩 테두리 */
-  --color-surface: #f5f5f4;      /* 이미지 자리, 요약 상자 */
-  --color-danger: #b42318;       /* 결제 실패 */
+  --color-ink: #111111; /* 본문·강조·주 버튼 */
+  --color-muted: #5f5f5f; /* 보조 글씨 */
+  --color-subtle: #6b6b6b; /* 품절 글씨, 단계 표시 */
+  --color-line: #e7e5e4; /* 구분선 */
+  --color-line-strong: #d6d3d1; /* 입력칸·칩 테두리 */
+  --color-surface: #f5f5f4; /* 이미지 자리, 요약 상자 */
+  --color-danger: #b42318; /* 결제 실패 */
+
+  --color-canvas: #fafaf9; /* 화면 바탕 */
+
+  --radius-field: 10px; /* 입력칸·버튼 */
+  --radius-card: 16px; /* 카드·상자 */
+
+  --shadow-card: 0 1px 2px rgb(17 17 17 / 0.04), 0 8px 24px rgb(17 17 17 / 0.05);
 
   --font-sans: var(--font-noto-sans-kr), system-ui, sans-serif;
 }
 
 body {
-  background: #ffffff;
+  background: var(--color-canvas);
   color: var(--color-ink);
 }
