@@ -1,3 +1,5 @@
+import { clearToken, getToken } from "@/lib/auth";
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
 
 export type ProductStatus = "ON_SALE" | "SOLD_OUT" | "HIDDEN";
@@ -10,6 +12,18 @@ export type Product = {
   price: number;
   status: ProductStatus;
   thumbnailUrl: string | null;
+};
+
+export type TokenResponse = {
+  accessToken: string;
+  expiresIn: number;
+};
+
+export type User = {
+  id: number;
+  loginId: string;
+  email: string;
+  name: string;
 };
 
 // 백엔드 ProblemDetail 에서 쓰는 필드
@@ -31,16 +45,123 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string): Promise<T> {
-    const res = await fetch(`${BASE_URL}${path}`);
-    if (!res.ok) {
-      const body = (await res.json().catch(() => null)) as Problem | null;
-      throw new ApiError(res.status, body?.code, body?.requestId, body?.detail ?? res.statusText);
+type Options = {
+  method?: "GET" | "POST" | "PATCH" | "DELETE";
+  body?: unknown;
+  // 토큰이 필요한 요청. 서버 컴포넌트에서는 못 쓴다
+  auth?: boolean;
+};
+
+async function request<T>(path: string, options: Options = {}): Promise<T> {
+  const { method = "GET", body, auth = false } = options;
+  const headers: Record<string, string> = {};
+  if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
+  if (auth) {
+    const token = getToken();
+    if (token !== null) {
+      headers["Authorization"] = `Bearer ${token}`;
     }
-    return res.json() as Promise<T>;
+  }
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method,
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+
+  if (res.ok) {
+    // 202·204 는 본문이 없다. 빈 본문에 res.json() 을 부르면 예외가 난다
+    const text = await res.text();
+    return (text === "" ? undefined : JSON.parse(text)) as T;
+  }
+
+  const problem = (await res.json().catch(() => null)) as Problem | null;
+  if (res.status === 401) {
+    clearToken();
+  }
+
+  throw new ApiError(
+    res.status,
+    problem?.code,
+    problem?.requestId,
+    problem?.detail ?? res.statusText,
+  );
 }
 
 export function getProducts(categoryId?: number): Promise<Product[]> {
-    const query = categoryId ? `?categoryId=${categoryId}` : "";
-    return request<Product[]>(`/api/products${query}`);
+  const query = categoryId ? `?categoryId=${categoryId}` : "";
+  return request<Product[]>(`/api/products${query}`);
+}
+
+export function getProduct(id: number): Promise<Product> {
+  return request<Product>(`/api/products/${id}`);
+}
+
+export function signUp(input: {
+  loginId: string;
+  email: string;
+  password: string;
+  name: string;
+}): Promise<void> {
+  return request<void>("/api/users", { method: "POST", body: input });
+}
+
+export function checkLoginId(loginId: string): Promise<{ available: boolean }> {
+  return request<{ available: boolean }>(
+    `/api/users/login-id-check?loginId=${encodeURIComponent(loginId)}`,
+  );
+}
+
+export function login(loginId: string, password: string): Promise<TokenResponse> {
+  return request<TokenResponse>("/api/auth/login", {
+    method: "POST",
+    body: { loginId, password },
+  });
+}
+
+export function getMe(): Promise<User> {
+  return request<User>("/api/users/me", { auth: true });
+}
+
+export function resendVerification(email: string): Promise<void> {
+  return request<void>("/api/auth/email-verification", { method: "POST", body: { email } });
+}
+
+export function confirmVerification(token: string): Promise<void> {
+  return request<void>("/api/auth/email-verification/confirm", {
+    method: "POST",
+    body: { token },
+  });
+}
+
+export function findLoginId(email: string): Promise<void> {
+  return request<void>("/api/auth/login-id/find", { method: "POST", body: { email } });
+}
+
+export function requestPasswordReset(email: string): Promise<void> {
+  return request<void>("/api/auth/password-reset", { method: "POST", body: { email } });
+}
+
+export function resetPassword(token: string, newPassword: string): Promise<void> {
+  return request<void>("/api/auth/password-reset/confirm", {
+    method: "POST",
+    body: { token, newPassword },
+  });
+}
+
+export function changeName(name: string): Promise<void> {
+  return request<void>("/api/users/me", { method: "PATCH", body: { name }, auth: true });
+}
+
+export function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  return request<void>("/api/users/me/password", {
+    method: "PATCH",
+    body: { currentPassword, newPassword },
+    auth: true,
+  });
+}
+
+export function withdraw(password: string): Promise<void> {
+  return request<void>("/api/users/me", { method: "DELETE", body: { password }, auth: true });
 }
