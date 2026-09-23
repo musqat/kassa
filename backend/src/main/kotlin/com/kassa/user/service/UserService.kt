@@ -76,6 +76,27 @@ class UserService(
     fun isLoginIdAvailable(loginId: String): Boolean =
         !userRepository.existsByLoginIdAndEmailVerifiedAtIsNotNull(loginId)
 
+    @Transactional
+    fun changeName(userId: Long, name: String) {
+
+        val user = userRepository.findByIdOrNull(userId) ?: throw BusinessException(ErrorCode.UNAUTHORIZED)
+
+        user.changeName(name.trim())
+    }
+
+    /** 바꾸면 모든 기기의 토큰이 무효가 된다 */
+    @Transactional
+    fun changePassword(userId: Long, currentPassword: String, newPassword: String) {
+        val now = Instant.now(clock)
+        val user = userRepository.findByIdOrNull(userId) ?: throw BusinessException(ErrorCode.UNAUTHORIZED)
+
+        if (!passwordEncoder.matches(currentPassword, user.passwordHash)) {
+            throw BusinessException(ErrorCode.PASSWORD_MISMATCH)
+        }
+
+        user.changePassword(passwordEncoder.encode(newPassword)!!, now)
+    }
+
     /** 비밀번호를 한 번 더 확인하고 개인정보를 지운다 */
     @Transactional
     fun withdraw(userId: Long, password: String) {
