@@ -53,4 +53,12 @@ class Product(
         protected set
     var reservedStock: Int = 0
         protected set
+
+    fun changePrice(price: Long) {
+        this.price = price
+    }
+
+    fun changeStatus(status: ProductStatus) {
+        this.status = status
+    }
 }

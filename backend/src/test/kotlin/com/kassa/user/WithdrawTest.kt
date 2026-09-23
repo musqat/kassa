@@ -1,5 +1,10 @@
 package com.kassa.user
 
+import com.kassa.cart.repository.CartItemRepository
+import com.kassa.catalog.domain.Category
+import com.kassa.catalog.domain.Product
+import com.kassa.catalog.repository.CategoryRepository
+import com.kassa.catalog.repository.ProductRepository
 import com.kassa.support.FakeEmailSender
 import com.kassa.support.IntegrationTest
 import com.kassa.user.repository.EmailTokenRepository
@@ -20,6 +25,9 @@ import org.springframework.test.web.servlet.post
 class WithdrawTest : IntegrationTest() {
 
     @Autowired
+    private lateinit var cartItemRepository: CartItemRepository
+
+    @Autowired
     private lateinit var mockMvc: MockMvc
 
     @Autowired
@@ -31,10 +39,17 @@ class WithdrawTest : IntegrationTest() {
     @Autowired
     private lateinit var mailSender: FakeEmailSender
 
+    @Autowired
+    private lateinit var productRepository: ProductRepository
+
+    @Autowired
+    private lateinit var categoryRepository: CategoryRepository
+
     private val email = "a@example.com"
 
     @BeforeEach
     fun setUp() {
+        cartItemRepository.deleteAll()
         emailTokenRepository.deleteAll()
         userRepository.deleteAll()
         mailSender.clear()
@@ -153,5 +168,22 @@ class WithdrawTest : IntegrationTest() {
             status { isBadRequest() }
             jsonPath("$.code") { value("COMMON_001") }
         }
+    }
+    @Test
+    fun `탈퇴하면 장바구니도 비워진다`() {
+        signUpAndVerify()
+        val token = loginToken()
+        val product = productRepository.save(Product(categoryRepository.save(Category("음료")), "생수", 4_800))
+
+        mockMvc.post("/api/cart/items") {
+            header("Authorization", "Bearer " + token)
+            contentType = MediaType.APPLICATION_JSON
+            content = """{"productId":${product.id},"quantity":2}"""
+        }
+        assertThat(cartItemRepository.count()).isEqualTo(1L)
+
+        withdraw(token)
+
+        assertThat(cartItemRepository.count()).isEqualTo(0L)
     }
 }

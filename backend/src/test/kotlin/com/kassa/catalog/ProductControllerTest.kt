@@ -5,6 +5,7 @@ import com.kassa.catalog.domain.Product
 import com.kassa.catalog.domain.ProductStatus
 import com.kassa.catalog.repository.CategoryRepository
 import com.kassa.catalog.repository.ProductRepository
+import com.kassa.cart.repository.CartItemRepository
 import com.kassa.support.IntegrationTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -15,6 +16,9 @@ import org.springframework.test.web.servlet.get
 
 @AutoConfigureMockMvc
 class ProductControllerTest : IntegrationTest() {
+
+    @Autowired
+    private lateinit var cartItemRepository: CartItemRepository
 
     @Autowired
     private lateinit var mockMvc: MockMvc
@@ -36,6 +40,7 @@ class ProductControllerTest : IntegrationTest() {
 
     @BeforeEach
     fun setUp() {
+        cartItemRepository.deleteAll()
         productRepository.deleteAll()
         categoryRepository.deleteAll()
 

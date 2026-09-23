@@ -1,5 +1,6 @@
 package com.kassa.user
 
+import com.kassa.cart.repository.CartItemRepository
 import com.kassa.support.FakeEmailSender
 import com.kassa.support.IntegrationTest
 import com.kassa.support.MutableClock
@@ -24,6 +25,9 @@ import java.time.Duration
 class AccountRecoveryTest : IntegrationTest() {
 
     @Autowired
+    private lateinit var cartItemRepository: CartItemRepository
+
+    @Autowired
     private lateinit var mockMvc: MockMvc
 
     @Autowired
@@ -42,6 +46,7 @@ class AccountRecoveryTest : IntegrationTest() {
 
     @BeforeEach
     fun setUp() {
+        cartItemRepository.deleteAll()
         emailTokenRepository.deleteAll()
         userRepository.deleteAll()
         mailSender.clear()
