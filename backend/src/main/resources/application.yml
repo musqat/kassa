@@ -48,6 +48,8 @@ logging:
     console: "%d{HH:mm:ss.SSS} %-5level [%X{requestId:-}] %logger{36} - %msg%n"
 
 app:
+  crypto:
+    phone-key: ${PHONE_KEY}
   jwt:
     # 배포는 환경 변수 JWT_SECRET
     secret: ${JWT_SECRET}

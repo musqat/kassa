@@ -15,6 +15,8 @@ logging:
     org.hibernate.SQL: debug
 
 app:
+  crypto:
+    phone-key: a2Fzc2EtdGVzdC1waG9uZS1rZXktbm90LXJlYWwhISE=
   jwt:
     # 로컬·테스트 전용. 배포는 환경 변수 JWT_SECRET
     secret: kassa-test-secret-not-a-real-key-here
