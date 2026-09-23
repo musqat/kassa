@@ -4,8 +4,7 @@ import { useState } from "react";
 import type { Product } from "@/lib/api";
 import { ProductCard } from "./ProductCard";
 
-// 정렬·필터는 받아온 목록에서 처리한다. 상품이 적은 동안만 맞는 방식이고,
-// 페이지네이션이 붙으면 서버 파라미터로 옮긴다.
+// 정렬·필터는 받아온 목록에서 처리한다. 페이지네이션이 붙으면 서버로 옮긴다
 
 type Sort = "new" | "priceAsc" | "priceDesc";
 type PriceRange = "under10k" | "10kTo30k" | "over30k";
@@ -29,7 +28,7 @@ const compare: Record<Sort, (a: Product, b: Product) => number> = {
   priceDesc: (a, b) => b.price - a.price,
 };
 
-const chip = "h-[34px] border px-3 text-[13px]";
+const chip = "h-[34px] rounded-full border px-3.5 text-[13px]";
 const chipOff = "border-line-strong bg-white text-ink";
 const chipOn = "border-ink bg-ink text-white";
 
@@ -45,8 +44,8 @@ export function ProductBrowser({ products }: { products: Product[] }) {
     .sort(compare[sort]);
 
   return (
-    <main className="flex flex-grow gap-10 px-12 py-10">
-      <aside className="flex w-[200px] shrink-0 flex-col gap-7 pt-1">
+    <main className="flex flex-grow flex-col gap-8 px-5 py-8 lg:flex-row lg:gap-10 lg:px-12 lg:py-10">
+      <aside className="flex flex-col gap-7 lg:w-[200px] lg:shrink-0 lg:pt-1">
         <div className="flex flex-col gap-3">
           <h2 className="text-[13px] font-bold">정렬</h2>
           <div className="flex flex-col gap-0.5">
@@ -58,7 +57,7 @@ export function ProductBrowser({ products }: { products: Product[] }) {
                   type="button"
                   aria-pressed={on}
                   onClick={() => setSort(s.value)}
-                  className={`flex h-9 items-center gap-2.5 text-left text-sm ${on ? "font-bold text-ink" : "text-muted"}`}
+                  className={`flex h-9 items-center gap-2.5 text-left text-sm ${on ? "text-ink font-bold" : "text-muted"}`}
                 >
                   <span className={`size-1.5 rounded-full ${on ? "bg-ink" : ""}`} />
                   {s.label}
@@ -68,7 +67,7 @@ export function ProductBrowser({ products }: { products: Product[] }) {
           </div>
         </div>
 
-        <div className="h-px bg-line" />
+        <div className="bg-line h-px" />
 
         <div className="flex flex-col gap-3">
           <h2 className="text-[13px] font-bold">가격</h2>
@@ -108,13 +107,13 @@ export function ProductBrowser({ products }: { products: Product[] }) {
       <section className="flex flex-grow flex-col gap-6">
         <div className="flex items-baseline gap-3">
           <h1 className="text-[22px] font-bold">전체 상품</h1>
-          <span className="text-sm text-muted">{visible.length}</span>
+          <span className="text-muted text-sm">{visible.length}</span>
         </div>
 
         {visible.length === 0 ? (
-          <p className="py-20 text-center text-sm text-muted">조건에 맞는 상품이 없습니다</p>
+          <p className="text-muted py-20 text-center text-sm">조건에 맞는 상품이 없습니다</p>
         ) : (
-          <ul className="grid grid-cols-4 gap-x-5 gap-y-8">
+          <ul className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 xl:grid-cols-4">
             {visible.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -122,9 +121,9 @@ export function ProductBrowser({ products }: { products: Product[] }) {
         )}
       </section>
 
-      <aside className="flex w-[200px] shrink-0 flex-col gap-4 pt-1">
+      <aside className="flex flex-col gap-4 lg:w-[200px] lg:shrink-0 lg:pt-1">
         <h2 className="text-[13px] font-bold">최근 본 상품</h2>
-        <p className="text-[13px] text-muted">아직 본 상품이 없습니다</p>
+        <p className="text-muted text-[13px]">아직 본 상품이 없습니다</p>
       </aside>
     </main>
   );

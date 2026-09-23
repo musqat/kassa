@@ -6,10 +6,10 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <li className="flex flex-col gap-2.5">
-      <div className="relative flex aspect-square items-center justify-center bg-surface text-xs text-subtle">
+      <div className="bg-surface text-subtle relative flex aspect-square items-center justify-center rounded-[var(--radius-card)] text-xs">
         상품 이미지
         {soldOut && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/70 text-xs font-bold tracking-[0.18em] text-ink">
+          <div className="text-ink absolute inset-0 flex items-center justify-center rounded-[var(--radius-card)] bg-white/70 text-xs font-bold tracking-[0.18em]">
             SOLD OUT
           </div>
         )}
