@@ -29,7 +29,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </nav>
           <div className="ml-auto flex gap-4 text-sm lg:gap-6">
             <AuthNav />
-            <span className="text-muted">장바구니</span>
+            <Link href="/cart" className="text-muted">
+              장바구니
+            </Link>
           </div>
         </header>
         {children}
