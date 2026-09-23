@@ -26,6 +26,25 @@ export type User = {
   name: string;
 };
 
+// 백엔드 CartResponse 와 같은 모양
+export type CartItem = {
+  itemId: number;
+  productId: number;
+  name: string;
+  price: number;
+  quantity: number;
+  lineAmount: number;
+  orderable: boolean;
+};
+
+export type Cart = {
+  items: CartItem[];
+  itemAmount: number;
+  shippingFee: number;
+  totalAmount: number;
+  freeShippingRemaining: number;
+};
+
 // 백엔드 ProblemDetail 에서 쓰는 필드
 type Problem = {
   status: number;
@@ -164,4 +183,28 @@ export function changePassword(currentPassword: string, newPassword: string): Pr
 
 export function withdraw(password: string): Promise<void> {
   return request<void>("/api/users/me", { method: "DELETE", body: { password }, auth: true });
+}
+
+export function getCart(): Promise<Cart> {
+  return request<Cart>("/api/cart", { auth: true });
+}
+
+export function addCartItem(productId: number, quantity: number): Promise<void> {
+  return request<void>("/api/cart/items", {
+    method: "POST",
+    body: { productId, quantity },
+    auth: true,
+  });
+}
+
+export function changeCartQuantity(itemId: number, quantity: number): Promise<void> {
+  return request<void>(`/api/cart/items/${itemId}`, {
+    method: "PATCH",
+    body: { quantity },
+    auth: true,
+  });
+}
+
+export function removeCartItem(itemId: number): Promise<void> {
+  return request<void>(`/api/cart/items/${itemId}`, { method: "DELETE", auth: true });
 }
