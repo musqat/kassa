@@ -1,6 +1,8 @@
 package com.kassa.cart
 
 import com.kassa.cart.repository.CartItemRepository
+import com.kassa.order.repository.AddressRepository
+import com.kassa.order.repository.OrderRepository
 import com.kassa.catalog.domain.Category
 import com.kassa.catalog.domain.Product
 import com.kassa.catalog.domain.ProductStatus
@@ -35,6 +37,12 @@ class CartControllerTest : IntegrationTest() {
     private lateinit var cartItemRepository: CartItemRepository
 
     @Autowired
+    private lateinit var orderRepository: OrderRepository
+
+    @Autowired
+    private lateinit var addressRepository: AddressRepository
+
+    @Autowired
     private lateinit var emailTokenRepository: EmailTokenRepository
 
     @Autowired
@@ -63,6 +71,8 @@ class CartControllerTest : IntegrationTest() {
 
     @BeforeEach
     fun setUp() {
+        orderRepository.deleteAll()
+        addressRepository.deleteAll()
         cartItemRepository.deleteAll()
         productRepository.deleteAll()
         categoryRepository.deleteAll()

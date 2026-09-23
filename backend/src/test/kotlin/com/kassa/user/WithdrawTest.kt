@@ -1,6 +1,8 @@
 package com.kassa.user
 
 import com.kassa.cart.repository.CartItemRepository
+import com.kassa.order.repository.AddressRepository
+import com.kassa.order.repository.OrderRepository
 import com.kassa.catalog.domain.Category
 import com.kassa.catalog.domain.Product
 import com.kassa.catalog.repository.CategoryRepository
@@ -28,6 +30,12 @@ class WithdrawTest : IntegrationTest() {
     private lateinit var cartItemRepository: CartItemRepository
 
     @Autowired
+    private lateinit var orderRepository: OrderRepository
+
+    @Autowired
+    private lateinit var addressRepository: AddressRepository
+
+    @Autowired
     private lateinit var mockMvc: MockMvc
 
     @Autowired
@@ -49,6 +57,8 @@ class WithdrawTest : IntegrationTest() {
 
     @BeforeEach
     fun setUp() {
+        orderRepository.deleteAll()
+        addressRepository.deleteAll()
         cartItemRepository.deleteAll()
         emailTokenRepository.deleteAll()
         userRepository.deleteAll()

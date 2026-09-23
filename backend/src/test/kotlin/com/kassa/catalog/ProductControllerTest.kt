@@ -6,6 +6,8 @@ import com.kassa.catalog.domain.ProductStatus
 import com.kassa.catalog.repository.CategoryRepository
 import com.kassa.catalog.repository.ProductRepository
 import com.kassa.cart.repository.CartItemRepository
+import com.kassa.order.repository.AddressRepository
+import com.kassa.order.repository.OrderRepository
 import com.kassa.support.IntegrationTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -19,6 +21,12 @@ class ProductControllerTest : IntegrationTest() {
 
     @Autowired
     private lateinit var cartItemRepository: CartItemRepository
+
+    @Autowired
+    private lateinit var orderRepository: OrderRepository
+
+    @Autowired
+    private lateinit var addressRepository: AddressRepository
 
     @Autowired
     private lateinit var mockMvc: MockMvc
@@ -40,6 +48,8 @@ class ProductControllerTest : IntegrationTest() {
 
     @BeforeEach
     fun setUp() {
+        orderRepository.deleteAll()
+        addressRepository.deleteAll()
         cartItemRepository.deleteAll()
         productRepository.deleteAll()
         categoryRepository.deleteAll()

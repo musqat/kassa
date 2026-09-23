@@ -1,0 +1,38 @@
+package com.kassa.order.controller
+
+import com.kassa.common.security.userId
+import com.kassa.order.dto.PlaceOrderRequest
+import com.kassa.order.dto.PlaceOrderResponse
+import com.kassa.order.service.OrderService
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestController
+
+@Tag(name = "주문")
+@SecurityRequirement(name = "bearer-jwt")
+@RestController
+@RequestMapping("/api/orders")
+class OrderController(
+    private val orderService: OrderService,
+) {
+
+    @Operation(
+        summary = "주문 생성",
+        description = "장바구니에서 판매 중인 상품만 담아 주문을 만들고 재고를 선점한다. 장바구니는 그대로 둔다",
+    )
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    fun place(
+        @AuthenticationPrincipal jwt: Jwt,
+        @Valid @RequestBody request: PlaceOrderRequest,
+    ): PlaceOrderResponse = orderService.place(jwt.userId(), request)
+}
