@@ -35,7 +35,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[id]"
         </div>
       </div>
 
-      <RecentlyViewed productId={product.id} />
+      <RecentlyViewed product={{ id: product.id, name: product.name, price: product.price }} />
     </main>
   );
 }

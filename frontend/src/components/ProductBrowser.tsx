@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Product } from "@/lib/api";
 import { ProductCard } from "./ProductCard";
+import { RecentSidebar } from "./RecentlyViewed";
 
 // 정렬·필터는 받아온 목록에서 처리한다. 페이지네이션이 붙으면 서버로 옮긴다
 
@@ -45,7 +46,7 @@ export function ProductBrowser({ products }: { products: Product[] }) {
 
   return (
     <main className="flex flex-grow flex-col gap-8 px-5 py-8 lg:flex-row lg:gap-10 lg:px-12 lg:py-10">
-      <aside className="flex flex-col gap-7 lg:w-[200px] lg:shrink-0 lg:pt-1">
+      <aside className="order-1 flex flex-col gap-7 lg:w-[200px] lg:shrink-0 lg:pt-1">
         <div className="flex flex-col gap-3">
           <h2 className="text-[13px] font-bold">정렬</h2>
           <div className="flex flex-col gap-0.5">
@@ -104,7 +105,7 @@ export function ProductBrowser({ products }: { products: Product[] }) {
         </div>
       </aside>
 
-      <section className="flex flex-grow flex-col gap-6">
+      <section className="order-3 flex flex-grow flex-col gap-6 lg:order-2">
         <div className="flex items-baseline gap-3">
           <h1 className="text-[22px] font-bold">전체 상품</h1>
           <span className="text-muted text-sm">{visible.length}</span>
@@ -121,10 +122,7 @@ export function ProductBrowser({ products }: { products: Product[] }) {
         )}
       </section>
 
-      <aside className="flex flex-col gap-4 lg:w-[200px] lg:shrink-0 lg:pt-1">
-        <h2 className="text-[13px] font-bold">최근 본 상품</h2>
-        <p className="text-muted text-[13px]">아직 본 상품이 없습니다</p>
-      </aside>
+      <RecentSidebar />
     </main>
   );
 }
