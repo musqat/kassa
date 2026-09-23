@@ -30,6 +30,10 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # LayoutProps 같은 전역 타입은 여기서 만들어진다
+      - name: Generate route types
+        run: npx next typegen
+
       - name: Type check
         run: npx tsc --noEmit
 
