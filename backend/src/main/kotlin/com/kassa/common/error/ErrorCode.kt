@@ -31,6 +31,11 @@ enum class ErrorCode(
     // 메일 에러
     MAIL_SEND_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "MAIL_001", "메일을 보내지 못했습니다. 잠시 뒤 다시 시도하세요"),
 
+    // 장바구니 에러
+    CART_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "CART_001", "장바구니에 없는 상품입니다"),
+    CART_QUANTITY_EXCEEDED(HttpStatus.BAD_REQUEST, "CART_002", "한 상품은 99개까지 담을 수 있습니다"),
+    PRODUCT_NOT_ORDERABLE(HttpStatus.CONFLICT, "CART_003", "지금은 담을 수 없는 상품입니다"),
+
     // 인증 에러
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH_001", "로그인이 필요합니다"),
     FORBIDDEN(HttpStatus.FORBIDDEN, "AUTH_002", "권한이 없습니다");
