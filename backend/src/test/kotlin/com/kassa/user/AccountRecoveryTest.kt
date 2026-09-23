@@ -1,6 +1,8 @@
 package com.kassa.user
 
 import com.kassa.cart.repository.CartItemRepository
+import com.kassa.order.repository.AddressRepository
+import com.kassa.order.repository.OrderRepository
 import com.kassa.support.FakeEmailSender
 import com.kassa.support.IntegrationTest
 import com.kassa.support.MutableClock
@@ -28,6 +30,12 @@ class AccountRecoveryTest : IntegrationTest() {
     private lateinit var cartItemRepository: CartItemRepository
 
     @Autowired
+    private lateinit var orderRepository: OrderRepository
+
+    @Autowired
+    private lateinit var addressRepository: AddressRepository
+
+    @Autowired
     private lateinit var mockMvc: MockMvc
 
     @Autowired
@@ -46,6 +54,8 @@ class AccountRecoveryTest : IntegrationTest() {
 
     @BeforeEach
     fun setUp() {
+        orderRepository.deleteAll()
+        addressRepository.deleteAll()
         cartItemRepository.deleteAll()
         emailTokenRepository.deleteAll()
         userRepository.deleteAll()

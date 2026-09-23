@@ -36,6 +36,12 @@ enum class ErrorCode(
     CART_QUANTITY_EXCEEDED(HttpStatus.BAD_REQUEST, "CART_002", "한 상품은 99개까지 담을 수 있습니다"),
     PRODUCT_NOT_ORDERABLE(HttpStatus.CONFLICT, "CART_003", "지금은 담을 수 없는 상품입니다"),
 
+    // 주문 에러
+    OUT_OF_STOCK(HttpStatus.CONFLICT, "ORDER_001", "재고가 모자랍니다"),
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_002", "주문을 찾을 수 없습니다"),
+    ORDER_NOT_CANCELABLE(HttpStatus.CONFLICT, "ORDER_003", "취소할 수 없는 주문입니다"),
+    EMPTY_ORDER(HttpStatus.BAD_REQUEST, "ORDER_004", "주문할 상품이 없습니다"),
+
     // 인증 에러
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH_001", "로그인이 필요합니다"),
     FORBIDDEN(HttpStatus.FORBIDDEN, "AUTH_002", "권한이 없습니다");

@@ -11,6 +11,8 @@ spring:
       mail.smtp.starttls.enable: false
 
 app:
+  crypto:
+    phone-key: a2Fzc2EtbG9jYWwtcGhvbmUta2V5LW5vdC1yZWFsISE=
   jwt:
     # 로컬·테스트 전용. 배포는 환경 변수 JWT_SECRET
     secret: kassa-local-dev-secret-not-a-real-key
