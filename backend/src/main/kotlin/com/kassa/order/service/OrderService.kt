@@ -11,6 +11,7 @@ import com.kassa.order.domain.Order
 import com.kassa.order.domain.OrderItem
 import com.kassa.order.domain.OrderNoGenerator
 import com.kassa.order.domain.ShippingInfo
+import com.kassa.order.dto.OrderResponse
 import com.kassa.order.dto.PlaceOrderRequest
 import com.kassa.order.dto.PlaceOrderResponse
 import com.kassa.order.repository.AddressRepository
@@ -75,6 +76,31 @@ class OrderService(
 
         return PlaceOrderResponse(order.orderNo, order.totalAmount)
 
+    }
+
+    @Transactional(readOnly = true)
+    fun findMyOrders(userId: Long): List<OrderResponse> {
+        return orderRepository.findAllByUserIdOrderByIdDesc(userId).map { toResponse(it) }
+    }
+
+    @Transactional(readOnly = true)
+    fun findMyOrder(userId: Long, orderNo: String): OrderResponse {
+        // ── 1단계. 조회 ──
+        val order = orderRepository.findByOrderNoAndUserId(orderNo, userId)
+            ?: throw BusinessException(ErrorCode.ORDER_NOT_FOUND)
+
+        return toResponse(order)
+
+    }
+
+    private fun toResponse(order: Order): OrderResponse =
+        OrderResponse.of(order, maskPhone(phoneCipher.decrypt(order.phoneEnc)))
+
+    // 010-1234-5678 을 010-****-5678 로
+    private fun maskPhone(phone: String): String {
+        val digits = phone.filter { it.isDigit() }
+        if (digits.length < 8) return "***"
+        return digits.take(3) + "-****-" + digits.takeLast(4)
     }
 
     // 드물지만 겹칠 수 있다. 한 번 더 만들어 보고 그래도 겹치면 예외
