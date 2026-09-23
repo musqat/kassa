@@ -97,6 +97,17 @@ class User(
         this.name = name
     }
 
+    fun changeName(name: String) {
+        this.name = name
+    }
+
+    /** 설정 화면에서 바꾼다. 모든 기기가 로그아웃된다 */
+    fun changePassword(passwordHash: String, now: Instant) {
+         this.passwordHash = passwordHash
+
+         tokenValidAfter = now.truncatedTo(ChronoUnit.SECONDS)
+    }
+
     /** 재설정 링크로 비밀번호를 바꾼다 */
     fun resetPassword(passwordHash: String, now: Instant) {
         this.passwordHash = passwordHash

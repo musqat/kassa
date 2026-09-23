@@ -4,6 +4,8 @@ import com.kassa.common.security.userId
 import com.kassa.user.dto.LOGIN_ID_MESSAGE
 import com.kassa.user.dto.LOGIN_ID_REGEX
 import com.kassa.user.dto.LoginIdAvailabilityResponse
+import com.kassa.user.dto.ChangeNameRequest
+import com.kassa.user.dto.ChangePasswordRequest
 import com.kassa.user.dto.SignupRequest
 import com.kassa.user.dto.WithdrawRequest
 import com.kassa.user.dto.UserResponse
@@ -18,6 +20,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -51,6 +54,22 @@ class UserController(
     @GetMapping("/me")
     fun me(@AuthenticationPrincipal jwt: Jwt): UserResponse =
         userService.me(jwt.userId())
+
+    @Operation(summary = "이름 변경")
+    @SecurityRequirement(name = "bearer-jwt")
+    @PatchMapping("/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun changeName(@AuthenticationPrincipal jwt: Jwt, @Valid @RequestBody request: ChangeNameRequest) {
+        userService.changeName(jwt.userId(), request.name)
+    }
+
+    @Operation(summary = "비밀번호 변경", description = "지금 비밀번호를 확인한다. 바꾸면 모든 기기의 토큰이 무효가 된다")
+    @SecurityRequirement(name = "bearer-jwt")
+    @PatchMapping("/me/password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun changePassword(@AuthenticationPrincipal jwt: Jwt, @Valid @RequestBody request: ChangePasswordRequest) {
+        userService.changePassword(jwt.userId(), request.currentPassword, request.newPassword)
+    }
 
     @Operation(summary = "탈퇴", description = "비밀번호를 한 번 더 확인한다")
     @SecurityRequirement(name = "bearer-jwt")

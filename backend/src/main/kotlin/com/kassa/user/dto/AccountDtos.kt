@@ -3,6 +3,7 @@ package com.kassa.user.dto
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
+import jakarta.validation.constraints.Size
 
 data class EmailRequest(
     @field:NotBlank
@@ -30,4 +31,20 @@ data class WithdrawRequest(
     val password: String,
 ) {
     override fun toString() = "WithdrawRequest(password=***)"
+}
+
+data class ChangeNameRequest(
+    @field:NotBlank
+    @field:Size(max = 50)
+    val name: String,
+)
+
+data class ChangePasswordRequest(
+    @field:NotBlank
+    val currentPassword: String,
+
+    @field:Pattern(regexp = PASSWORD_REGEX, message = PASSWORD_MESSAGE)
+    val newPassword: String,
+) {
+    override fun toString() = "ChangePasswordRequest(currentPassword=***, newPassword=***)"
 }
