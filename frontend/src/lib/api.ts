@@ -45,6 +45,40 @@ export type Cart = {
   freeShippingRemaining: number;
 };
 
+export type OrderStatus = "PENDING" | "PAID" | "SHIPPED" | "FAILED" | "CANCELED";
+
+export type OrderItem = {
+  productId: number;
+  name: string;
+  price: number;
+  quantity: number;
+  lineAmount: number;
+};
+
+export type Order = {
+  orderNo: string;
+  status: OrderStatus;
+  itemAmount: number;
+  shippingFee: number;
+  totalAmount: number;
+  items: OrderItem[];
+  receiver: string;
+  phone: string;
+  zipcode: string;
+  addr1: string;
+  addr2: string | null;
+  createdAt: string;
+};
+
+export type PlaceOrderInput = {
+  receiver: string;
+  phone: string;
+  zipcode: string;
+  addr1: string;
+  addr2?: string;
+  saveAddress?: boolean;
+};
+
 // 백엔드 ProblemDetail 에서 쓰는 필드
 type Problem = {
   status: number;
@@ -207,4 +241,22 @@ export function changeCartQuantity(itemId: number, quantity: number): Promise<vo
 
 export function removeCartItem(itemId: number): Promise<void> {
   return request<void>(`/api/cart/items/${itemId}`, { method: "DELETE", auth: true });
+}
+
+export function placeOrder(
+  input: PlaceOrderInput,
+): Promise<{ orderNo: string; totalAmount: number }> {
+  return request("/api/orders", { method: "POST", body: input, auth: true });
+}
+
+export function getOrders(): Promise<Order[]> {
+  return request<Order[]>("/api/orders", { auth: true });
+}
+
+export function getOrder(orderNo: string): Promise<Order> {
+  return request<Order>(`/api/orders/${orderNo}`, { auth: true });
+}
+
+export function cancelOrder(orderNo: string): Promise<void> {
+  return request<void>(`/api/orders/${orderNo}/cancel`, { method: "POST", auth: true });
 }
