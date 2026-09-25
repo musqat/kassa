@@ -40,14 +40,19 @@ class OrderService(
     @Transactional
     fun place(userId: Long, request: PlaceOrderRequest): PlaceOrderResponse {
         val now = Instant.now(clock)
-        val lines = cartItemRepository.findAllByUserIdOrderByIdDesc(userId)
-            .filter { it.product.status == ProductStatus.ON_SALE }
-
-        if (lines.isEmpty()) {
+        val cartItems = cartItemRepository.findAllByUserId(userId)
+        if (cartItems.isEmpty()) {
             throw BusinessException(ErrorCode.EMPTY_ORDER)
         }
 
-        val locked = productRepository.findAllForUpdate(lines.map { it.product.id!! }).associateBy { it.id!! }
+        // 잠근 뒤의 상태로 판단한다. 먼저 읽어 두면 그 값이 영속성 컨텍스트에 남아 잠금이 헛돈다
+        val locked = productRepository.findAllForUpdate(cartItems.map { it.product.id!! })
+            .associateBy { it.id!! }
+
+        val lines = cartItems.filter { locked.getValue(it.product.id!!).status == ProductStatus.ON_SALE }
+        if (lines.isEmpty()) {
+            throw BusinessException(ErrorCode.EMPTY_ORDER)
+        }
 
 
         lines.forEach { line -> locked.getValue(line.product.id!!).reserve(line.quantity) }
