@@ -7,7 +7,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import java.time.Instant
 
-// 대행사와 주고받은 원문을 남긴다. 정산 감사와 버그 추적에 쓴다
+// 대행사와 주고받은 원문. 정산 감사와 추적에 사용
 @Entity
 class PaymentLog(
     paymentId: Long,

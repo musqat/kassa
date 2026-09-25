@@ -9,7 +9,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import java.time.Instant
 
-// 웹훅 원문을 그대로 쌓는다. 처리는 워커가 따로 한다
+// 웹훅 원문. 처리는 워커가 따로 한다
 @Entity
 class WebhookInbox(
     eventId: String,
@@ -22,7 +22,7 @@ class WebhookInbox(
     var id: Long? = null
         protected set
 
-    // Standard Webhooks 의 webhook-id 헤더. 유니크 제약이 중복 수신을 막는다
+    // Standard Webhooks 의 webhook-id. 유니크 제약이 중복 수신을 막는다
     var eventId: String = eventId
         protected set
 
@@ -56,13 +56,13 @@ class WebhookInbox(
         error = null
     }
 
-    /** RECEIVED 로 남겨 다음 주기에 다시 처리한다 */
+    /** RECEIVED 로 남겨 다음 주기에 다시 처리 */
     fun retryLater(reason: String) {
         attemptCount += 1
         error = reason.take(255)
     }
 
-    /** 재시도를 멈춘다. 워커가 RECEIVED 만 가져간다 */
+    /** 재시도를 멈춘다. 처리 대상은 RECEIVED 뿐 */
     fun giveUp(reason: String, now: Instant) {
         status = InboxStatus.FAILED
         processedAt = now

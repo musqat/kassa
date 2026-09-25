@@ -8,7 +8,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import java.time.Instant
 
-// 단계마다 한 행. 어디까지 갔는지는 이 표를 보고 판단한다
+// 단계마다 한 행. 어디까지 갔는지의 근거
 @Entity
 class SagaStep(
     sagaInstanceId: Long,
@@ -35,7 +35,7 @@ class SagaStep(
     var idempotencyKey: String? = null
         protected set
 
-    // payment_id 만 담는다. 주소·전화번호는 넣지 않는다
+    // payment_id 만. 주소·전화번호는 넣지 않는다
     var payload: String? = null
         protected set
 
@@ -45,13 +45,13 @@ class SagaStep(
     var executedAt: Instant? = null
         protected set
 
-    /** 재시도도 여기를 지난다. status 는 건드리지 않는다 */
+    /** 재시도도 여기를 지난다. status 는 그대로 */
     fun begin(now: Instant) {
         attemptCount += 1
         executedAt = now
     }
 
-    /** 멱등키를 잡는다. 이미 있으면 그 값을 쓴다 */
+    /** 멱등키. 이미 있으면 그 값 */
     fun claimKey(key: String): String {
         idempotencyKey?.let { return it }
 
@@ -59,7 +59,7 @@ class SagaStep(
         return key
     }
 
-    /** 재시도로 성공했으면 앞선 실패 메시지를 지운다 */
+    /** 앞선 실패 메시지를 지운다 */
     fun done(payload: String?) {
         status = StepStatus.DONE
         this.payload = payload

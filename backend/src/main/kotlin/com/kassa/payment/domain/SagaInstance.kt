@@ -62,7 +62,7 @@ class SagaInstance(
         updatedAt = now
     }
 
-    /** 되돌리기까지 끝났다. 돈이 오갔다가 되돌아온 결과다 */
+    /** COMPENSATING 에서만 온다 */
     fun compensated(now: Instant) {
         check(status == SagaStatus.COMPENSATING) { "되돌리기 중이 아닙니다: $status" }
 
@@ -70,7 +70,7 @@ class SagaInstance(
         updatedAt = now
     }
 
-    /** 되돌리기가 거듭 실패했다. 여기서 재시도를 멈춘다 */
+    /** COMPENSATING 에서만 온다. 재시도를 멈춘다 */
     fun needsAttention(now: Instant) {
         check(status == SagaStatus.COMPENSATING) { "되돌리기 중이 아닙니다: $status" }
 
