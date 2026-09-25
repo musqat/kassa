@@ -5,6 +5,7 @@ import com.kassa.order.dto.OrderResponse
 import com.kassa.order.dto.PlaceOrderRequest
 import com.kassa.order.dto.PlaceOrderResponse
 import com.kassa.order.service.OrderService
+import com.kassa.payment.service.PaymentPreparer
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/orders")
 class OrderController(
     private val orderService: OrderService,
+    private val paymentPreparer: PaymentPreparer,
 ) {
 
     @Operation(
@@ -37,7 +39,12 @@ class OrderController(
     fun place(
         @AuthenticationPrincipal jwt: Jwt,
         @Valid @RequestBody request: PlaceOrderRequest,
-    ): PlaceOrderResponse = orderService.place(jwt.userId(), request)
+    ): PlaceOrderResponse {
+        // 주문 트랜잭션이 커밋된 뒤에 대행사를 부른다
+        val placed = orderService.place(jwt.userId(), request)
+
+        return placed.copy(payable = paymentPreparer.prepare(placed.orderNo, placed.totalAmount))
+    }
 
     @Operation(summary = "주문 목록", description = "내 주문만 최신순으로")
     @GetMapping

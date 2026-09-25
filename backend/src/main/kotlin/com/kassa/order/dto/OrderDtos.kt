@@ -35,4 +35,6 @@ data class PlaceOrderRequest(
 data class PlaceOrderResponse(
     val orderNo: String,
     val totalAmount: Long,
+    // 금액 사전 등록에 실패하면 결제창을 열 수 없다
+    val payable: Boolean = true,
 )
