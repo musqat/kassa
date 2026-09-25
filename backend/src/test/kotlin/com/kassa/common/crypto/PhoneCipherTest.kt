@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.util.Base64
+import javax.crypto.AEADBadTagException
 
 class PhoneCipherTest {
 
@@ -39,8 +40,12 @@ class PhoneCipherTest {
     @Test
     fun `한 글자라도 바뀌면 복호화되지 않는다`() {
         val encrypted = cipher.encrypt("010-1234-5678")
-        val broken = encrypted.dropLast(2) + if (encrypted.last() == 'A') "B=" else "A="
+        val (iv, body) = encrypted.split(":")
+        val bytes = Base64.getDecoder().decode(body)
+        bytes[0] = (bytes[0].toInt() xor 0x01).toByte()
+        val broken = "$iv:" + Base64.getEncoder().encodeToString(bytes)
 
         assertThatThrownBy { cipher.decrypt(broken) }
+            .isInstanceOf(AEADBadTagException::class.java)
     }
 }
