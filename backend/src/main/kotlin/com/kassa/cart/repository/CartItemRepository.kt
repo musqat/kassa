@@ -10,6 +10,9 @@ interface CartItemRepository : JpaRepository<CartItem, Long> {
     @EntityGraph(attributePaths = ["product"])
     fun findAllByUserIdOrderByIdDesc(userId: Long): List<CartItem>
 
+    // 주문에서 쓴다. 상품을 미리 읽으면 잠금 조회가 옛 상태를 그대로 쓴다
+    fun findAllByUserId(userId: Long): List<CartItem>
+
     // 남의 항목을 건드리지 못하게 회원 조건을 같이 건다
     fun findByIdAndUserId(id: Long, userId: Long): CartItem?
 

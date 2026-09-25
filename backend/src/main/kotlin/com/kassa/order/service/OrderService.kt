@@ -10,6 +10,7 @@ import com.kassa.order.domain.Address
 import com.kassa.order.domain.Order
 import com.kassa.order.domain.OrderItem
 import com.kassa.order.domain.OrderNoGenerator
+import com.kassa.order.domain.OrderStatus
 import com.kassa.order.domain.ShippingInfo
 import com.kassa.order.dto.OrderResponse
 import com.kassa.order.dto.PlaceOrderRequest
@@ -19,7 +20,9 @@ import com.kassa.order.repository.OrderRepository
 import com.kassa.pricing.ShippingPolicy
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.data.domain.Limit
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 
 @Service
@@ -37,14 +40,19 @@ class OrderService(
     @Transactional
     fun place(userId: Long, request: PlaceOrderRequest): PlaceOrderResponse {
         val now = Instant.now(clock)
-        val lines = cartItemRepository.findAllByUserIdOrderByIdDesc(userId)
-            .filter { it.product.status == ProductStatus.ON_SALE }
-
-        if (lines.isEmpty()) {
+        val cartItems = cartItemRepository.findAllByUserId(userId)
+        if (cartItems.isEmpty()) {
             throw BusinessException(ErrorCode.EMPTY_ORDER)
         }
 
-        val locked = productRepository.findAllForUpdate(lines.map { it.product.id!! }).associateBy { it.id!! }
+        // 잠근 뒤의 상태로 판단한다. 먼저 읽어 두면 그 값이 영속성 컨텍스트에 남아 잠금이 헛돈다
+        val locked = productRepository.findAllForUpdate(cartItems.map { it.product.id!! })
+            .associateBy { it.id!! }
+
+        val lines = cartItems.filter { locked.getValue(it.product.id!!).status == ProductStatus.ON_SALE }
+        if (lines.isEmpty()) {
+            throw BusinessException(ErrorCode.EMPTY_ORDER)
+        }
 
 
         lines.forEach { line -> locked.getValue(line.product.id!!).reserve(line.quantity) }
@@ -76,6 +84,42 @@ class OrderService(
 
         return PlaceOrderResponse(order.orderNo, order.totalAmount)
 
+    }
+
+    /** 결제 전 주문을 접고 선점을 푼다 */
+    @Transactional
+    fun cancel(userId: Long, orderNo: String) {
+        val now = Instant.now(clock)
+        val order = orderRepository.findByOrderNoAndUserId(orderNo, userId)
+            ?: throw BusinessException(ErrorCode.ORDER_NOT_FOUND)
+
+        order.cancel(now)
+
+        releaseStock(order)
+    }
+
+    /** 결제 없이 기한이 지난 주문을 접는다. 한 번에 EXPIRE_BATCH 건씩 */
+    @Transactional
+    fun expireOverdue(expiry: Duration): Int {
+        val now = Instant.now(clock)
+        val expired = orderRepository.findExpired(OrderStatus.PENDING, now.minus(expiry), Limit.of(EXPIRE_BATCH))
+
+        expired.forEach { order ->
+            order.expire(now)
+            releaseStock(order)
+        }
+
+        return expired.size
+    }
+
+    // 주문 줄마다 잡아 둔 수량을 되돌린다. 여기서도 상품 행을 잠근다
+    private fun releaseStock(order: Order) {
+        val locked = productRepository.findAllForUpdate(order.items.map { it.productId })
+            .associateBy { it.id!! }
+
+        order.items.forEach { item ->
+            locked.getValue(item.productId).releaseReservation(item.quantity)
+        }
     }
 
     @Transactional(readOnly = true)
@@ -115,5 +159,9 @@ class OrderService(
     private fun saveAddress(userId: Long, shipping: ShippingInfo) {
         addressRepository.findByUserIdAndIsDefaultTrue(userId)?.unsetDefault()
         addressRepository.save(Address(userId, shipping, isDefault = true))
+    }
+
+    private companion object {
+        const val EXPIRE_BATCH = 100
     }
 }

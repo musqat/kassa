@@ -15,6 +15,11 @@ logging:
     org.hibernate.SQL: debug
 
 app:
+  order:
+    expiry:
+      enabled: false
+      after: 30m
+      interval: 60s
   crypto:
     phone-key: a2Fzc2EtdGVzdC1waG9uZS1rZXktbm90LXJlYWwhISE=
   jwt:
