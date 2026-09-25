@@ -78,6 +78,28 @@ class OrderService(
 
     }
 
+    /** 결제 전 주문을 접고 선점을 푼다 */
+    @Transactional
+    fun cancel(userId: Long, orderNo: String) {
+        val now = Instant.now(clock)
+        val order = orderRepository.findByOrderNoAndUserId(orderNo, userId)
+            ?: throw BusinessException(ErrorCode.ORDER_NOT_FOUND)
+
+        order.cancel(now)
+
+        releaseStock(order)
+    }
+
+    // 주문 줄마다 잡아 둔 수량을 되돌린다. 여기서도 상품 행을 잠근다
+    private fun releaseStock(order: Order) {
+        val locked = productRepository.findAllForUpdate(order.items.map { it.productId })
+            .associateBy { it.id!! }
+
+        order.items.forEach { item ->
+            locked.getValue(item.productId).releaseReservation(item.quantity)
+        }
+    }
+
     @Transactional(readOnly = true)
     fun findMyOrders(userId: Long): List<OrderResponse> {
         return orderRepository.findAllByUserIdOrderByIdDesc(userId).map { toResponse(it) }

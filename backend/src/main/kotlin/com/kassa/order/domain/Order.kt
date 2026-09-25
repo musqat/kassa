@@ -1,5 +1,7 @@
 package com.kassa.order.domain
 
+import com.kassa.common.error.BusinessException
+import com.kassa.common.error.ErrorCode
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -74,6 +76,26 @@ class Order(
     @OneToMany(mappedBy = "order", cascade = [CascadeType.ALL], orphanRemoval = true)
     var items: MutableList<OrderItem> = mutableListOf()
         protected set
+
+    /** 사용자가 결제 전에 접는다 */
+    fun cancel(now: Instant) {
+        // ── 1단계. 상태 검사 ──
+        if (status != OrderStatus.PENDING){
+            throw BusinessException(ErrorCode.ORDER_NOT_CANCELABLE)
+        }
+
+        status = OrderStatus.CANCELED
+        closedAt = now
+    }
+
+    /** 결제 없이 시간이 지나 스케줄러가 접는다 */
+    fun expire(now: Instant) {
+        if(status != OrderStatus.PENDING){
+            throw BusinessException(ErrorCode.ORDER_NOT_CANCELABLE)
+        }
+        status = OrderStatus.FAILED
+        closedAt = now
+    }
 
     fun addItem(item: OrderItem) {
         items += item

@@ -50,4 +50,14 @@ class OrderController(
         @AuthenticationPrincipal jwt: Jwt,
         @PathVariable orderNo: String,
     ): OrderResponse = orderService.findMyOrder(jwt.userId(), orderNo)
+
+    @Operation(summary = "주문 취소", description = "결제 전 주문만 취소할 수 있다. 선점한 재고가 풀린다")
+    @PostMapping("/{orderNo}/cancel")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun cancel(
+        @AuthenticationPrincipal jwt: Jwt,
+        @PathVariable orderNo: String,
+    ) {
+        orderService.cancel(jwt.userId(), orderNo)
+    }
 }
