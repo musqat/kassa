@@ -10,6 +10,7 @@ import com.kassa.order.domain.Address
 import com.kassa.order.domain.Order
 import com.kassa.order.domain.OrderItem
 import com.kassa.order.domain.OrderNoGenerator
+import com.kassa.order.domain.OrderStatus
 import com.kassa.order.domain.ShippingInfo
 import com.kassa.order.dto.OrderResponse
 import com.kassa.order.dto.PlaceOrderRequest
@@ -19,7 +20,9 @@ import com.kassa.order.repository.OrderRepository
 import com.kassa.pricing.ShippingPolicy
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.data.domain.Limit
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 
 @Service
@@ -90,6 +93,20 @@ class OrderService(
         releaseStock(order)
     }
 
+    /** 결제 없이 기한이 지난 주문을 접는다. 한 번에 EXPIRE_BATCH 건씩 */
+    @Transactional
+    fun expireOverdue(expiry: Duration): Int {
+        val now = Instant.now(clock)
+        val expired = orderRepository.findExpired(OrderStatus.PENDING, now.minus(expiry), Limit.of(EXPIRE_BATCH))
+
+        expired.forEach { order ->
+            order.expire(now)
+            releaseStock(order)
+        }
+
+        return expired.size
+    }
+
     // 주문 줄마다 잡아 둔 수량을 되돌린다. 여기서도 상품 행을 잠근다
     private fun releaseStock(order: Order) {
         val locked = productRepository.findAllForUpdate(order.items.map { it.productId })
@@ -137,5 +154,9 @@ class OrderService(
     private fun saveAddress(userId: Long, shipping: ShippingInfo) {
         addressRepository.findByUserIdAndIsDefaultTrue(userId)?.unsetDefault()
         addressRepository.save(Address(userId, shipping, isDefault = true))
+    }
+
+    private companion object {
+        const val EXPIRE_BATCH = 100
     }
 }

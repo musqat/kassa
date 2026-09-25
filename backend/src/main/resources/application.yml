@@ -48,6 +48,10 @@ logging:
     console: "%d{HH:mm:ss.SSS} %-5level [%X{requestId:-}] %logger{36} - %msg%n"
 
 app:
+  order:
+    expiry:
+      after: 30m
+      interval: 60s
   crypto:
     phone-key: ${PHONE_KEY}
   jwt:
