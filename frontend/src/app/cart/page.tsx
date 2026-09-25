@@ -103,13 +103,13 @@ export default function CartPage() {
             </div>
           </section>
 
-          <button
-            type="button"
-            disabled
-            className="bg-ink h-12 rounded-[var(--radius-field)] text-sm text-white disabled:opacity-40"
+          <Link
+            href="/checkout"
+            aria-disabled={!cart.items.some((item) => item.orderable)}
+            className="bg-ink flex h-12 items-center justify-center rounded-[var(--radius-field)] text-sm text-white aria-disabled:pointer-events-none aria-disabled:opacity-40"
           >
             주문하기
-          </button>
+          </Link>
         </>
       )}
     </main>
