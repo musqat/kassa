@@ -52,7 +52,7 @@ class Payment(
     var canceledAt: Instant? = null
         protected set
 
-    /** REQUESTED 에서만 온다 */
+    /** 승인 결과 저장. REQUESTED 에서만 */
     fun approve(transactionId: String, method: String?, now: Instant) {
         check(status == PaymentStatus.REQUESTED) { "승인할 수 없는 상태입니다: $status" }
 
@@ -63,7 +63,7 @@ class Payment(
         approvedAt = now
     }
 
-    /** REQUESTED 에서만 온다 */
+    /** 실패 사유 저장. REQUESTED 에서만 */
     fun fail(reason: String) {
         check(status == PaymentStatus.REQUESTED) { "실패로 돌릴 수 없는 상태입니다: $status" }
 
@@ -71,7 +71,7 @@ class Payment(
         failReason = reason
     }
 
-    /** PAID 에서만 온다. 대행사 취소 뒤에 부른다 */
+    /** 취소 저장. PAID 에서만. 대행사 취소가 끝난 뒤 */
     fun cancel(now: Instant) {
         check(status == PaymentStatus.PAID) { "취소할 수 없는 상태입니다: $status" }
 
@@ -79,7 +79,7 @@ class Payment(
         canceledAt = now
     }
 
-    /** 취소 멱등키. 이미 있으면 그 값 */
+    /** 취소 멱등키 확보. 이미 있으면 그 값 */
     fun startCancel(key: String): String {
         cancelIdempotencyKey?.let { return it }
 
