@@ -1,4 +1,4 @@
-package com.kassa.payment.domain
+package com.kassa.saga.domain
 
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -8,7 +8,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import java.time.Instant
 
-// 단계마다 한 행. 어디까지 갔는지의 근거
+// 단계 하나의 실행 기록. 시도 횟수와 멱등키, 결과가 남는다
 @Entity
 class SagaStep(
     sagaInstanceId: Long,
@@ -45,13 +45,13 @@ class SagaStep(
     var executedAt: Instant? = null
         protected set
 
-    /** 재시도도 여기를 지난다. status 는 그대로 */
+    /** 시도 횟수와 실행 시각 저장. 재시도도 여기를 지난다 */
     fun begin(now: Instant) {
         attemptCount += 1
         executedAt = now
     }
 
-    /** 멱등키. 이미 있으면 그 값 */
+    /** 멱등키 확보. 이미 있으면 그 값 */
     fun claimKey(key: String): String {
         idempotencyKey?.let { return it }
 
@@ -59,20 +59,20 @@ class SagaStep(
         return key
     }
 
-    /** 앞선 실패 메시지를 지운다 */
+    /** 성공과 payload 저장. 앞선 실패 메시지는 지운다 */
     fun done(payload: String?) {
         status = StepStatus.DONE
         this.payload = payload
         error = null
     }
 
-    /** error 컬럼이 255자다 */
+    /** 실패 사유 저장. error 컬럼이 255자 */
     fun fail(reason: String) {
         status = StepStatus.FAILED
         error = reason.take(255)
     }
 
-    /** DONE 에서만 온다 */
+    /** 보상 완료 저장. DONE 에서만 */
     fun compensated() {
         check(status == StepStatus.DONE) { "되돌릴 수 없는 상태입니다: $status" }
 

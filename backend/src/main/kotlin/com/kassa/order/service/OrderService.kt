@@ -36,7 +36,7 @@ class OrderService(
     private val clock: Clock,
 ) {
 
-    /** 장바구니를 주문으로 옮기고 재고를 선점한다. 장바구니는 결제가 끝난 뒤에 비운다 */
+    // 장바구니를 주문으로 옮기고 재고를 선점한다. 장바구니는 결제가 끝난 뒤에 비운다
     @Transactional
     fun place(userId: Long, request: PlaceOrderRequest): PlaceOrderResponse {
         val now = Instant.now(clock)
@@ -86,7 +86,7 @@ class OrderService(
 
     }
 
-    /** 결제 전 주문을 접고 선점을 푼다 */
+    // 주문 취소와 선점 해제
     @Transactional
     fun cancel(userId: Long, orderNo: String) {
         val now = Instant.now(clock)
@@ -98,11 +98,13 @@ class OrderService(
         releaseStock(order)
     }
 
-    /** 결제 없이 기한이 지난 주문을 접는다. 한 번에 EXPIRE_BATCH 건씩 */
+    // 결제 없이 기한이 지난 주문을 접는다. 한 번에 EXPIRE_BATCH 건씩
+    // skip 이 true 인 주문번호는 건드리지 않는다
     @Transactional
-    fun expireOverdue(expiry: Duration): Int {
+    fun expireOverdue(expiry: Duration, skip: (String) -> Boolean = { false }): Int {
         val now = Instant.now(clock)
-        val expired = orderRepository.findExpired(OrderStatus.PENDING, now.minus(expiry), Limit.of(EXPIRE_BATCH))
+        val overdue = orderRepository.findExpired(OrderStatus.PENDING, now.minus(expiry), Limit.of(EXPIRE_BATCH))
+        val expired = overdue.filterNot { skip(it.orderNo) }
 
         expired.forEach { order ->
             order.expire(now)
@@ -129,7 +131,6 @@ class OrderService(
 
     @Transactional(readOnly = true)
     fun findMyOrder(userId: Long, orderNo: String): OrderResponse {
-        // ── 1단계. 조회 ──
         val order = orderRepository.findByOrderNoAndUserId(orderNo, userId)
             ?: throw BusinessException(ErrorCode.ORDER_NOT_FOUND)
 

@@ -64,7 +64,7 @@ class PaymentStateTest {
     }
 
     @Test
-    fun `취소 멱등키는 한 번 설정하면 바뀌지 않는다`() {
+    fun `취소 멱등키는 한 번 잡으면 바뀌지 않는다`() {
         val payment = paid()
 
         val first = payment.startCancel("key-1")

@@ -27,6 +27,7 @@ import java.time.Instant
 @AutoConfigureMockMvc
 @Import(MutableClockConfig::class)
 class AuthControllerTest : IntegrationTest() {
+
     @Autowired
     private lateinit var cartItemRepository: CartItemRepository
 
@@ -58,11 +59,6 @@ class AuthControllerTest : IntegrationTest() {
 
     @BeforeEach
     fun setUp() {
-        orderRepository.deleteAll()
-        addressRepository.deleteAll()
-        cartItemRepository.deleteAll()
-        emailTokenRepository.deleteAll()
-        userRepository.deleteAll()
         clock.reset()
         user = userRepository.save(
             User(

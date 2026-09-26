@@ -48,13 +48,6 @@ class OrderConcurrencyTest : IntegrationTest() {
 
     @BeforeEach
     fun setUp() {
-        orderRepository.deleteAll()
-        addressRepository.deleteAll()
-        cartItemRepository.deleteAll()
-        productRepository.deleteAll()
-        categoryRepository.deleteAll()
-        emailTokenRepository.deleteAll()
-        userRepository.deleteAll()
     }
 
     private fun givenProduct(stock: Int) {

@@ -1,7 +1,5 @@
-package com.kassa.payment.repository
+package com.kassa.payment.inbox
 
-import com.kassa.payment.domain.InboxStatus
-import com.kassa.payment.domain.WebhookInbox
 import jakarta.persistence.LockModeType
 import jakarta.persistence.QueryHint
 import org.springframework.data.domain.Limit

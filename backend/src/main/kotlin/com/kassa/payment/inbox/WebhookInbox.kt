@@ -1,4 +1,4 @@
-package com.kassa.payment.domain
+package com.kassa.payment.inbox
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -49,20 +49,20 @@ class WebhookInbox(
     var processedAt: Instant? = null
         protected set
 
-    /** 처리를 마쳤다 */
+    /** 처리 완료 저장 */
     fun done(now: Instant) {
         status = InboxStatus.DONE
         processedAt = now
         error = null
     }
 
-    /** RECEIVED 로 남겨 다음 주기에 다시 처리 */
+    /** 실패 사유와 시도 횟수 저장. RECEIVED 로 남아 다음 주기에 다시 처리 */
     fun retryLater(reason: String) {
         attemptCount += 1
         error = reason.take(255)
     }
 
-    /** 재시도를 멈춘다. 처리 대상은 RECEIVED 뿐 */
+    /** 처리 중단 저장. 처리 대상은 RECEIVED 뿐 */
     fun giveUp(reason: String, now: Instant) {
         status = InboxStatus.FAILED
         processedAt = now

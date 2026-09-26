@@ -48,12 +48,6 @@ class ProductControllerTest : IntegrationTest() {
 
     @BeforeEach
     fun setUp() {
-        orderRepository.deleteAll()
-        addressRepository.deleteAll()
-        cartItemRepository.deleteAll()
-        productRepository.deleteAll()
-        categoryRepository.deleteAll()
-
         categoryA = categoryRepository.save(Category("음료"))
         categoryB = categoryRepository.save(Category("과자"))
 

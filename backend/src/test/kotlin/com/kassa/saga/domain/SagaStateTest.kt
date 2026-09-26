@@ -1,4 +1,4 @@
-package com.kassa.payment.domain
+package com.kassa.saga.domain
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -30,7 +30,7 @@ class SagaStateTest {
     }
 
     @Test
-    fun `단계에 들어가면 updatedAt 이 갱신된다`() {
+    fun `SagaStep 에 들어가면 updatedAt 이 갱신된다`() {
         val saga = instance()
         saga.enterStep("APPROVE_PAYMENT", later)
 
@@ -39,7 +39,7 @@ class SagaStateTest {
     }
 
     @Test
-    fun `모든 단계를 마치면 COMPLETED`() {
+    fun `모든 단계를 마치면 COMPLETED 가 된다`() {
         val saga = instance()
         saga.complete(later)
 
@@ -48,7 +48,7 @@ class SagaStateTest {
     }
 
     @Test
-    fun `되돌리기를 시작하면 COMPENSATING`() {
+    fun `되돌리기를 시작하면 COMPENSATING 이 된다`() {
         val saga = instance()
         saga.startCompensating(later)
 
@@ -57,7 +57,7 @@ class SagaStateTest {
     }
 
     @Test
-    fun `되돌리기를 마치면 FAILED`() {
+    fun `되돌리기를 마치면 FAILED 가 된다`() {
         val saga = instance()
         saga.startCompensating(now)
         saga.compensated(later)
@@ -67,7 +67,7 @@ class SagaStateTest {
     }
 
     @Test
-    fun `되돌리기가 거듭 실패하면 NEEDS_ATTENTION`() {
+    fun `되돌리기가 거듭 실패하면 NEEDS_ATTENTION 이 된다`() {
         val saga = instance()
         saga.startCompensating(now)
         saga.needsAttention(later)
@@ -95,7 +95,7 @@ class SagaStateTest {
     }
 
     @Test
-    fun `단계는 PENDING 으로 시작한다`() {
+    fun `SagaStep 은 PENDING 으로 시작한다`() {
         val step = step()
 
         assertThat(step.status).isEqualTo(StepStatus.PENDING)
@@ -144,7 +144,7 @@ class SagaStateTest {
     }
 
     @Test
-    fun `마친 단계는 되돌릴 수 있다`() {
+    fun `마친 SagaStep 은 되돌릴 수 있다`() {
         val step = doneStep()
         step.compensated()
 
@@ -152,7 +152,7 @@ class SagaStateTest {
     }
 
     @Test
-    fun `마치지 않은 단계는 되돌릴 수 없다`() {
+    fun `마치지 않은 SagaStep 은 되돌릴 수 없다`() {
         assertThatThrownBy { step().compensated() }
             .isInstanceOf(IllegalStateException::class.java)
             .hasMessageContaining("PENDING")

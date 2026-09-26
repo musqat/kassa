@@ -10,7 +10,7 @@ private val log = LoggerFactory.getLogger(PaymentPreparer::class.java)
 @Component
 class PaymentPreparer(private val gateway: PaymentGateway) {
 
-    /** 실패해도 던지지 않는다. 주문은 이미 저장됐고 결제창만 못 연다 */
+    /** 금액 등록. 실패해도 던지지 않는다. 주문은 이미 저장됐고 결제창만 못 연다 */
     fun prepare(orderNo: String, amount: Long): Boolean {
         return try {
             gateway.preRegister(orderNo, amount)

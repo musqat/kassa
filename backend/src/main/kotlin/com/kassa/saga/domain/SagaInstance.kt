@@ -1,4 +1,4 @@
-package com.kassa.payment.domain
+package com.kassa.saga.domain
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -9,7 +9,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import java.time.Instant
 
-// 주문 하나에 사가 하나. order_no 가 유니크다
+// 주문 하나에 사가 하나. order_no 유니크
 @Entity
 class SagaInstance(
     sagaType: String,
@@ -40,13 +40,18 @@ class SagaInstance(
     var updatedAt: Instant = Instant.now()
         protected set
 
-    /** 복구 스케줄러가 updatedAt 으로 멈춘 사가를 고른다 */
+    /** 갱신 시각만 민다. 복구가 집었다는 표시 */
+    fun touch(now: Instant) {
+        updatedAt = now
+    }
+
+    /** 현재 단계와 갱신 시각 저장 */
     fun enterStep(stepName: String, now: Instant) {
         currentStep = stepName
         updatedAt = now
     }
 
-    /** RUNNING 에서만 온다 */
+    /** 완료 저장. RUNNING 에서만 */
     fun complete(now: Instant) {
         check(status == SagaStatus.RUNNING) { "완료할 수 없는 상태입니다: $status" }
 
@@ -54,7 +59,7 @@ class SagaInstance(
         updatedAt = now
     }
 
-    /** RUNNING 에서만 온다 */
+    /** 보상 시작 저장. RUNNING 에서만 */
     fun startCompensating(now: Instant) {
         check(status == SagaStatus.RUNNING) { "되돌릴 수 없는 상태입니다: $status" }
 
@@ -62,7 +67,7 @@ class SagaInstance(
         updatedAt = now
     }
 
-    /** COMPENSATING 에서만 온다 */
+    /** 보상 완료 저장. COMPENSATING 에서만 */
     fun compensated(now: Instant) {
         check(status == SagaStatus.COMPENSATING) { "되돌리기 중이 아닙니다: $status" }
 
@@ -70,7 +75,7 @@ class SagaInstance(
         updatedAt = now
     }
 
-    /** COMPENSATING 에서만 온다. 재시도를 멈춘다 */
+    /** 재시도 중단 저장. COMPENSATING 에서만 */
     fun needsAttention(now: Instant) {
         check(status == SagaStatus.COMPENSATING) { "되돌리기 중이 아닙니다: $status" }
 

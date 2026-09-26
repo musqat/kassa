@@ -1,6 +1,6 @@
-package com.kassa.payment.repository
+package com.kassa.saga.repository
 
-import com.kassa.payment.domain.SagaStep
+import com.kassa.saga.domain.SagaStep
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface SagaStepRepository : JpaRepository<SagaStep, Long> {

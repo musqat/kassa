@@ -55,11 +55,6 @@ class ProfileTest : IntegrationTest() {
 
     @BeforeEach
     fun setUp() {
-        orderRepository.deleteAll()
-        addressRepository.deleteAll()
-        cartItemRepository.deleteAll()
-        emailTokenRepository.deleteAll()
-        userRepository.deleteAll()
         mailSender.clear()
         clock.reset()
     }

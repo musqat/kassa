@@ -1,4 +1,4 @@
-package com.kassa.payment.domain
+package com.kassa.payment.inbox
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -18,7 +18,7 @@ class WebhookInboxTest {
     )
 
     @Test
-    fun `서명 검증에 실패한 건은 FAILED 로 들어온다`() {
+    fun `검증 실패로 들어온 웹훅은 시도 횟수가 0 이다`() {
         val inbox = WebhookInbox(
             eventId = "evt-2",
             payload = "{}",
@@ -64,7 +64,7 @@ class WebhookInboxTest {
     }
 
     @Test
-    fun `포기하면 FAILED 가 되고 다시 처리되지 않는다`() {
+    fun `포기하면 FAILED 가 되고 처리 시각이 남는다`() {
         val inbox = received()
 
         inbox.giveUp("5회 초과", later)
