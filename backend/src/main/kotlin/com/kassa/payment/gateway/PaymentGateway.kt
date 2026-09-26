@@ -2,25 +2,33 @@ package com.kassa.payment.gateway
 
 import java.time.Instant
 
-// 결제 대행사를 가리는 경계. 구현체는 FakePaymentGateway 와 PortOnePaymentGateway
+// 결제 대행사를 가리는 경계. 구현체는 FakePaymentGateway 와 TossPaymentGateway
 interface PaymentGateway {
 
-    /** 금액을 미리 등록한다. 조작된 금액으로 결제창을 열면 대행사가 거절한다 */
+    /** 결제 금액 사전 등록. 이 개념이 없는 대행사면 아무 일도 안 한다 */
     fun preRegister(orderNo: String, amount: Long)
 
-    /** 승인. 같은 멱등키면 대행사가 같은 요청으로 본다 */
-    fun confirmPayment(orderNo: String, amount: Long, idempotencyKey: String): GatewayPayment
+    /**
+     * 승인. 같은 멱등키면 대행사가 같은 요청으로 본다.
+     * approvalToken 은 결제창이 돌려준 값이다. 토스는 paymentKey 를 넣는다
+     */
+    fun confirmPayment(
+        orderNo: String,
+        amount: Long,
+        idempotencyKey: String,
+        approvalToken: String? = null,
+    ): GatewayPayment
 
-    /** 전액 취소 */
+    /** 승인된 결제 전액 취소. 부분 취소는 없다 */
     fun cancelPayment(orderNo: String, amount: Long, idempotencyKey: String): GatewayPayment
 
-    /** 대행사 쪽 결과. 결과를 모를 때의 근거 */
+    /** 대행사에 저장된 결제 상태 조회 */
     fun getPayment(orderNo: String): GatewayPayment?
 
-    /** 서명 검증. 통과하면 event_id 를, 아니면 null */
+    /** 웹훅 서명 검증. 통과하면 event_id, 실패하면 null */
     fun verifyWebhook(headers: Map<String, String>, rawBody: String): String?
 
-    /** 기간 조회. 정산 대사용 */
+    /** 기간 안의 결제 목록 조회. 정산 대사용 */
     fun findPayments(from: Instant, to: Instant): List<GatewayPayment>
 }
 
@@ -48,11 +56,11 @@ enum class GatewayStatus {
     CANCELED,
 }
 
-/** 결과를 아는 실패 */
+/** 대행사 요청 거절. 승인 안 됨 */
 class GatewayException(message: String, val code: String? = null) : RuntimeException(message)
 
-/** 결과를 모르는 실패. 승인됐는지 알 수 없다 */
+/** 응답 없음. 승인 여부 모름 */
 class GatewayTimeoutException(message: String) : RuntimeException(message)
 
-/** 이미 승인된 결제. 사가는 성공으로 친다 */
+/** 같은 주문에 승인된 결제가 이미 있음. payment 에 그 결제가 담긴다 */
 class AlreadyPaidException(val payment: GatewayPayment) : RuntimeException("이미 승인된 결제입니다")

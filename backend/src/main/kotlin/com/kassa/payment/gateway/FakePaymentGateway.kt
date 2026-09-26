@@ -12,6 +12,16 @@ import org.springframework.stereotype.Component
 @Profile("local", "test")
 class FakePaymentGateway(private val clock: Clock) : PaymentGateway {
 
+    enum class Outcome {
+        SUCCESS,
+
+        /** 승인 안 됨이 확실한 실패 */
+        FAIL,
+
+        /** 결과를 모르는 실패 */
+        TIMEOUT,
+    }
+
     private val registered = ConcurrentHashMap<String, Long>()
     private val payments = ConcurrentHashMap<String, GatewayPayment>()
 
@@ -34,31 +44,7 @@ class FakePaymentGateway(private val clock: Clock) : PaymentGateway {
     @Volatile
     var preRegisterFails: Boolean = false
 
-    enum class Outcome {
-        SUCCESS,
-
-        /** 승인 안 됨이 확실한 실패 */
-        FAIL,
-
-        /** 결과를 모르는 실패 */
-        TIMEOUT,
-    }
-
-    fun reset() {
-        registered.clear()
-        payments.clear()
-        byKey.clear()
-        nextResult = Outcome.SUCCESS
-        amountOverride = null
-        cancelFailCount = 0
-        preRegisterFails = false
-    }
-
-    /** 내 DB 를 거치지 않은 결제를 심는다. 정산 대사용 */
-    fun plant(orderNo: String, amount: Long, at: Instant) {
-        payments[orderNo] = paid(orderNo, amount, at)
-    }
-
+    /** 주문번호별 결제 금액 저장 */
     override fun preRegister(orderNo: String, amount: Long) {
         if (preRegisterFails) {
             throw GatewayException("금액을 등록하지 못했습니다", "FAKE_PRE_REGISTER")
@@ -67,7 +53,13 @@ class FakePaymentGateway(private val clock: Clock) : PaymentGateway {
         registered[orderNo] = amount
     }
 
-    override fun confirmPayment(orderNo: String, amount: Long, idempotencyKey: String): GatewayPayment {
+    /** 승인. 등록 금액과 대조한 뒤 PAID 결제 생성 */
+    override fun confirmPayment(
+        orderNo: String,
+        amount: Long,
+        idempotencyKey: String,
+        approvalToken: String?,
+    ): GatewayPayment {
         // 같은 키로 다시 오면 처리하지 않고 먼저 준 답을 그대로 준다
         byKey[idempotencyKey]?.let { return it }
 
@@ -94,6 +86,7 @@ class FakePaymentGateway(private val clock: Clock) : PaymentGateway {
         return payment
     }
 
+    /** PAID 결제를 CANCELED 로 변경 */
     override fun cancelPayment(orderNo: String, amount: Long, idempotencyKey: String): GatewayPayment {
         if (cancelFailCount > 0) {
             cancelFailCount -= 1
@@ -110,18 +103,37 @@ class FakePaymentGateway(private val clock: Clock) : PaymentGateway {
         return canceled
     }
 
+    /** 주문번호로 결제 조회 */
     override fun getPayment(orderNo: String): GatewayPayment? = payments[orderNo]
 
-    // 서명 자리에 "valid" 가 오면 통과로 본다
+    /** 웹훅 서명 검증. 서명 자리에 "valid" 가 오면 통과 */
     override fun verifyWebhook(headers: Map<String, String>, rawBody: String): String? {
         if (headers["webhook-signature"] != "valid") return null
 
         return headers["webhook-id"]
     }
 
+    /** 승인 시각이 기간 안에 드는 결제 조회 */
     override fun findPayments(from: Instant, to: Instant): List<GatewayPayment> =
         payments.values.filter { it.approvedAt != null && it.approvedAt >= from && it.approvedAt < to }
 
+    /** 저장한 결제와 스위치를 비운다 */
+    fun reset() {
+        registered.clear()
+        payments.clear()
+        byKey.clear()
+        nextResult = Outcome.SUCCESS
+        amountOverride = null
+        cancelFailCount = 0
+        preRegisterFails = false
+    }
+
+    /** 대행사 쪽에만 결제 생성. 정산 대사용 */
+    fun plant(orderNo: String, amount: Long, at: Instant) {
+        payments[orderNo] = paid(orderNo, amount, at)
+    }
+
+    /** PAID 상태의 GatewayPayment 생성 */
     private fun paid(orderNo: String, amount: Long, at: Instant) = GatewayPayment(
         orderNo = orderNo,
         transactionId = "tx-${UUID.randomUUID()}",
