@@ -77,10 +77,22 @@ class Order(
     var items: MutableList<OrderItem> = mutableListOf()
         protected set
 
+    /** 결제 승인이 끝났다 */
+    fun markPaid(now: Instant) {
+        when (status) {
+            OrderStatus.PENDING -> {
+                status = OrderStatus.PAID
+                paidAt = now
+            }
+            // 승인과 웹훅이 순서 없이 들어와 두 번 부르는 게 정상이다
+            OrderStatus.PAID -> Unit
+            else -> throw BusinessException(ErrorCode.ORDER_NOT_PAYABLE)
+        }
+    }
+
     /** 사용자가 결제 전에 접는다 */
     fun cancel(now: Instant) {
-        // ── 1단계. 상태 검사 ──
-        if (status != OrderStatus.PENDING){
+        if (status != OrderStatus.PENDING) {
             throw BusinessException(ErrorCode.ORDER_NOT_CANCELABLE)
         }
 
@@ -90,7 +102,7 @@ class Order(
 
     /** 결제 없이 시간이 지나 스케줄러가 접는다 */
     fun expire(now: Instant) {
-        if(status != OrderStatus.PENDING){
+        if (status != OrderStatus.PENDING) {
             throw BusinessException(ErrorCode.ORDER_NOT_CANCELABLE)
         }
         status = OrderStatus.FAILED

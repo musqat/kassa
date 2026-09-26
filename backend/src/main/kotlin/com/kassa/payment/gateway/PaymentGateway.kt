@@ -25,7 +25,7 @@ interface PaymentGateway {
     /** 대행사에 저장된 결제 상태 조회 */
     fun getPayment(orderNo: String): GatewayPayment?
 
-    /** 웹훅 서명 검증. 통과하면 event_id, 실패하면 null */
+    /** 웹훅 서명 검증. 통과면 event_id, 실패면 null */
     fun verifyWebhook(headers: Map<String, String>, rawBody: String): String?
 
     /** 기간 안의 결제 목록 조회. 정산 대사용 */

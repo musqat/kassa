@@ -6,7 +6,7 @@ interface SagaStepHandler {
     /** saga_step.step_name 에 저장할 이름 */
     val name: String
 
-    /** 실행. 반환값은 saga_step.payload 에 저장 */
+    /** 실행. saga_step.payload 에 저장 */
     fun execute(context: SagaContext): String?
 
     /** 실행 되돌리기 */
