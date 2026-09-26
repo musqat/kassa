@@ -20,6 +20,11 @@ app:
       enabled: false
       after: 30m
       interval: 60s
+  saga:
+    recovery:
+      enabled: false
+      stuck-after: 10m
+      interval: 5m
   crypto:
     phone-key: a2Fzc2EtdGVzdC1waG9uZS1rZXktbm90LXJlYWwhISE=
   jwt:

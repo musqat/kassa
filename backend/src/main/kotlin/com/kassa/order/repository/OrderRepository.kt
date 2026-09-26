@@ -24,6 +24,10 @@ interface OrderRepository : JpaRepository<Order, Long> {
 
     fun existsByOrderNo(orderNo: String): Boolean
 
+    // 복구 스케줄러는 회원을 모른 채 주문번호로만 찾는다
+    @EntityGraph(attributePaths = ["items"])
+    fun findByOrderNo(orderNo: String): Order?
+
     // 다른 워커가 잡은 행은 건너뛴다. 인스턴스를 늘려도 같은 주문을 두 번 처리하지 않는다
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints(QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2"))

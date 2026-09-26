@@ -67,13 +67,6 @@ class PreRegisterTest : IntegrationTest() {
 
     @BeforeEach
     fun setUp() {
-        orderRepository.deleteAll()
-        addressRepository.deleteAll()
-        cartItemRepository.deleteAll()
-        productRepository.deleteAll()
-        categoryRepository.deleteAll()
-        emailTokenRepository.deleteAll()
-        userRepository.deleteAll()
         gateway.reset()
 
         val category = categoryRepository.save(Category("음료"))

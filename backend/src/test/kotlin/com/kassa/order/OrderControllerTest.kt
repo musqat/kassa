@@ -50,14 +50,6 @@ class OrderControllerTest : IntegrationTest() {
 
     @BeforeEach
     fun setUp() {
-        orderRepository.deleteAll()
-        addressRepository.deleteAll()
-        cartItemRepository.deleteAll()
-        productRepository.deleteAll()
-        categoryRepository.deleteAll()
-        emailTokenRepository.deleteAll()
-        userRepository.deleteAll()
-
         val category = categoryRepository.save(Category("음료"))
         water = productRepository.save(Product(category, "생수", 4_800, stock = 10))
         kettle = productRepository.save(Product(category, "주전자", 45_000, stock = 3))

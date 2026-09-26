@@ -2,6 +2,7 @@ package com.kassa.saga
 
 import com.kassa.saga.domain.SagaInstance
 import com.kassa.saga.domain.SagaStatus
+import com.kassa.saga.domain.StepStatus
 import com.kassa.saga.domain.SagaStep
 import com.kassa.saga.step.ApprovePaymentStep
 import com.kassa.saga.step.ConfirmOrderStep
@@ -21,9 +22,7 @@ class OrderSagaOrchestrator(
     // 실행 순서. 스프링이 주입하는 목록은 순서를 보장하지 않아 직접 세운다
     private val steps: List<SagaStepHandler> = listOf(approvePayment, confirmOrder)
 
-    /**
-     * 승인부터 주문 확정
-     */
+    // 승인부터 주문 확정까지
     fun start(orderNo: String, userId: Long, approvalToken: String?) {
         val instance = recorder.startOrFind(orderNo)
 
@@ -42,11 +41,37 @@ class OrderSagaOrchestrator(
             } catch (e: Exception) {
                 recorder.stepFailed(step, e.message ?: e.javaClass.simpleName)
                 log.warn("사가 단계 실패: {} {}", orderNo, handler.name, e)
+
+                compensate(orderNo, userId, approvalToken, instance)
                 throw e
             }
         }
 
         recorder.complete(instance)
+    }
+
+    // 마친 단계를 역순으로 되돌린다. 예외를 밖으로 던지지 않는다
+    private fun compensate(
+        orderNo: String,
+        userId: Long,
+        approvalToken: String?,
+        instance: SagaInstance,
+    ) {
+        recorder.startCompensating(instance)
+        val doneSteps = recorder.stepsOf(instance.id!!).filter { it.status == StepStatus.DONE }
+        for (step in doneSteps.reversed()) {
+            val handler = steps.first { it.name == step.stepName }
+            val context = contextFor(orderNo, userId, approvalToken, instance, step)
+            try {
+                handler.compensate(context)
+                recorder.stepCompensated(step)
+            } catch (e: Exception) {
+                log.warn("보상 실패: {} {}", orderNo, step.stepName, e)
+                recorder.needsAttention(instance)
+                return
+            }
+        }
+        recorder.compensated(instance)
     }
 
     // 단계가 멱등키와 앞선 payload 를 읽는 통로

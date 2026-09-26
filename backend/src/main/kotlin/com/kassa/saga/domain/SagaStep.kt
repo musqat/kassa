@@ -8,7 +8,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import java.time.Instant
 
-// 단계 하나의 실행 기록. 어디까지 갔는지의 근거
+// 단계 하나의 실행 기록. 시도 횟수와 멱등키, 결과가 남는다
 @Entity
 class SagaStep(
     sagaInstanceId: Long,

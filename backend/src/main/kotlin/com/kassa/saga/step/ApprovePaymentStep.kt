@@ -17,7 +17,7 @@ import java.time.Clock
 import java.util.UUID
 import org.springframework.stereotype.Component
 
-// 대행사 승인. 여기부터 돈이 움직인다
+// 대행사 승인과 취소
 @Component
 class ApprovePaymentStep(
     private val orderRepository: OrderRepository,
@@ -41,7 +41,7 @@ class ApprovePaymentStep(
             ?: paymentRepository.save(Payment(order.id!!, order.totalAmount))
 
         // 이미 승인된 건은 성공으로 친다. 실패로 보면 멀쩡한 결제를 보상으로 취소한다
-        // 타임아웃은 잡지 않는다. REQUESTED 로 남아야 확인 스케줄러가 집는다
+        // 타임아웃은 잡지 않는다. REQUESTED 로 남아야 확인 스케줄러가 가져간다
         val result: GatewayPayment = try {
             gateway.confirmPayment(
                 context.orderNo,
