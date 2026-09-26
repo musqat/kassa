@@ -77,7 +77,7 @@ class Order(
     var items: MutableList<OrderItem> = mutableListOf()
         protected set
 
-    /** 결제 승인이 끝났다 */
+    /** 결제 완료 저장. 이미 PAID 면 그대로 둔다 */
     fun markPaid(now: Instant) {
         when (status) {
             OrderStatus.PENDING -> {
@@ -90,7 +90,7 @@ class Order(
         }
     }
 
-    /** 사용자가 결제 전에 접는다 */
+    /** 취소 저장. PENDING 에서만 */
     fun cancel(now: Instant) {
         if (status != OrderStatus.PENDING) {
             throw BusinessException(ErrorCode.ORDER_NOT_CANCELABLE)
@@ -100,7 +100,7 @@ class Order(
         closedAt = now
     }
 
-    /** 결제 없이 시간이 지나 스케줄러가 접는다 */
+    /** 만료 저장. PENDING 에서만 */
     fun expire(now: Instant) {
         if (status != OrderStatus.PENDING) {
             throw BusinessException(ErrorCode.ORDER_NOT_CANCELABLE)

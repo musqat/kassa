@@ -18,7 +18,7 @@ class WebhookInboxTest {
     )
 
     @Test
-    fun `FAILED 로 만들면 시도 횟수는 0 이다`() {
+    fun `검증 실패로 들어온 웹훅은 시도 횟수가 0 이다`() {
         val inbox = WebhookInbox(
             eventId = "evt-2",
             payload = "{}",

@@ -52,6 +52,10 @@ app:
     expiry:
       after: 30m
       interval: 60s
+  saga:
+    recovery:
+      stuck-after: 10m
+      interval: 5m
   crypto:
     phone-key: ${PHONE_KEY}
   jwt:

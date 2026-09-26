@@ -17,7 +17,7 @@ import java.time.Clock
 import java.util.UUID
 import org.springframework.stereotype.Component
 
-// 대행사 승인. 여기부터 돈이 움직인다
+// 대행사 승인과 취소
 @Component
 class ApprovePaymentStep(
     private val orderRepository: OrderRepository,

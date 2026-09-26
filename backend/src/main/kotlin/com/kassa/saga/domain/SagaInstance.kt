@@ -40,6 +40,11 @@ class SagaInstance(
     var updatedAt: Instant = Instant.now()
         protected set
 
+    /** 갱신 시각만 민다. 복구가 집었다는 표시 */
+    fun touch(now: Instant) {
+        updatedAt = now
+    }
+
     /** 현재 단계와 갱신 시각 저장 */
     fun enterStep(stepName: String, now: Instant) {
         currentStep = stepName

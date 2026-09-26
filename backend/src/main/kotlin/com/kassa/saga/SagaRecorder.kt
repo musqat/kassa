@@ -1,12 +1,14 @@
 package com.kassa.saga
 
 import com.kassa.saga.domain.SagaInstance
+import com.kassa.saga.domain.SagaStatus
 import com.kassa.saga.domain.SagaStep
 import com.kassa.saga.repository.SagaInstanceRepository
 import com.kassa.saga.repository.SagaStepRepository
 import java.time.Clock
 import java.time.Instant
 import java.util.UUID
+import org.springframework.data.domain.Limit
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -67,6 +69,45 @@ class SagaRecorder(
     fun complete(instance: SagaInstance) {
         instance.complete(Instant.now(clock))
         instanceRepository.save(instance)
+    }
+
+    // 보상 시작 저장
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    fun startCompensating(instance: SagaInstance) {
+        instance.startCompensating(Instant.now(clock))
+        instanceRepository.save(instance)
+    }
+
+    // SagaStep 보상 완료 저장
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    fun stepCompensated(step: SagaStep) {
+        step.compensated()
+        stepRepository.save(step)
+    }
+
+    // 보상까지 끝난 사가 저장
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    fun compensated(instance: SagaInstance) {
+        instance.compensated(Instant.now(clock))
+        instanceRepository.save(instance)
+    }
+
+    // 보상이 거듭 실패해 멈춘 사가 저장
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    fun needsAttention(instance: SagaInstance) {
+        instance.needsAttention(Instant.now(clock))
+        instanceRepository.save(instance)
+    }
+
+    // 멈춘 사가를 집는다. 잠근 채로 갱신 시각을 밀어 다음 주기에 다시 걸리지 않게 한다
+    // 짧은 트랜잭션이다. 대행사 호출은 이 밖에서 한다
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    fun claimStuck(status: SagaStatus, cutoff: Instant, limit: Int): List<SagaInstance> {
+        val now = Instant.now(clock)
+        val stuck = instanceRepository.findStuck(status, cutoff, Limit.of(limit))
+
+        stuck.forEach { it.touch(now) }
+        return instanceRepository.saveAll(stuck)
     }
 
     // 지나온 SagaStep 을 실행 순서대로 조회. 보상은 역순으로 처리
