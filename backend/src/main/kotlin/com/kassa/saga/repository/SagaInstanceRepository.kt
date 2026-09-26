@@ -1,7 +1,7 @@
-package com.kassa.payment.repository
+package com.kassa.saga.repository
 
-import com.kassa.payment.domain.SagaInstance
-import com.kassa.payment.domain.SagaStatus
+import com.kassa.saga.domain.SagaInstance
+import com.kassa.saga.domain.SagaStatus
 import jakarta.persistence.LockModeType
 import jakarta.persistence.QueryHint
 import java.time.Instant
@@ -16,7 +16,7 @@ interface SagaInstanceRepository : JpaRepository<SagaInstance, Long> {
 
     fun findByOrderNo(orderNo: String): SagaInstance?
 
-    // 만료 스케줄러의 제외 조건
+    // 주문번호로 사가 존재 확인
     fun existsByOrderNo(orderNo: String): Boolean
 
     // 멈춘 사가. 다른 워커가 잡은 행은 건너뛴다

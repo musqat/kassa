@@ -1,4 +1,4 @@
-package com.kassa.payment.saga
+package com.kassa.saga
 
 // SagaStep 실행과 보상
 interface SagaStepHandler {
@@ -17,7 +17,7 @@ data class SagaContext(
     val orderNo: String,
     val userId: Long,
     val approvalToken: String?,
-    // 지금 SagaStep 의 멱등키. 실행 시점에 정해져 함수로 받는다
+    // 지금 SagaStep 의 멱등키
     val idempotencyKey: () -> String,
     // 앞선 SagaStep 이 저장한 payload
     val payloadOf: (String) -> String?,

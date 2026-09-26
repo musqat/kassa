@@ -1,9 +1,9 @@
-package com.kassa.payment.saga
+package com.kassa.saga
 
-import com.kassa.payment.domain.SagaInstance
-import com.kassa.payment.domain.SagaStep
-import com.kassa.payment.repository.SagaInstanceRepository
-import com.kassa.payment.repository.SagaStepRepository
+import com.kassa.saga.domain.SagaInstance
+import com.kassa.saga.domain.SagaStep
+import com.kassa.saga.repository.SagaInstanceRepository
+import com.kassa.saga.repository.SagaStepRepository
 import java.time.Clock
 import java.time.Instant
 import java.util.UUID
@@ -20,7 +20,7 @@ class SagaRecorder(
     private val clock: Clock,
 ) {
 
-    // 승인 요청이 들어올 때마다 사가 확보. 주문번호당 하나
+    // 사가 확보. 주문번호당 하나
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     fun startOrFind(orderNo: String): SagaInstance {
         val found  = instanceRepository.findByOrderNo(orderNo)
@@ -41,7 +41,6 @@ class SagaRecorder(
             ?: SagaStep(instance.id!!, stepName)
 
         step.begin(now)
-        // 반환값은 쓰지 않는다. 키는 step 안에 남고 save 로 같이 들어간다
         step.claimKey(UUID.randomUUID().toString())
         instance.enterStep(stepName, now)
 

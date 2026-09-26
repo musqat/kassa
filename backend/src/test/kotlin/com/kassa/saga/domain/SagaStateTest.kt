@@ -1,4 +1,4 @@
-package com.kassa.payment.domain
+package com.kassa.saga.domain
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
