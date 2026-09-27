@@ -34,6 +34,9 @@ app:
       enabled: false
       stale-after: 3m
       interval: 1m
+    reconcile:
+      enabled: false
+      cron: "0 30 4 * * *"
   crypto:
     phone-key: a2Fzc2EtdGVzdC1waG9uZS1rZXktbm90LXJlYWwhISE=
   jwt:

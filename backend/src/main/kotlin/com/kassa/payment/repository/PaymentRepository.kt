@@ -19,6 +19,13 @@ interface PaymentRepository : JpaRepository<Payment, Long> {
 
     fun findByOrderIdAndStatus(orderId: Long, status: PaymentStatus): Payment?
 
+    // 대행사 기록과 대조할 때는 그날 승인된 결제만 본다
+    fun findAllByStatusAndApprovedAtBetween(
+        status: PaymentStatus,
+        from: Instant,
+        to: Instant,
+    ): List<Payment>
+
     // 결과를 모르는 결제. 다른 워커가 잡은 행은 건너뛴다
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints(QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2"))

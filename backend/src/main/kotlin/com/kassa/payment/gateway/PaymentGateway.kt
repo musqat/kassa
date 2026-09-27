@@ -28,7 +28,7 @@ interface PaymentGateway {
     /** 웹훅 서명 검증. 통과면 event_id, 실패면 null */
     fun verifyWebhook(headers: Map<String, String>, rawBody: String): String?
 
-    /** 기간 안의 결제 목록 조회. 정산 대사용 */
+    /** 기간 안의 결제 목록 조회. 내 DB 와 대조할 때 쓴다 */
     fun findPayments(from: Instant, to: Instant): List<GatewayPayment>
 }
 

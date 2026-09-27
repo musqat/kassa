@@ -63,6 +63,8 @@ app:
     result-check:
       stale-after: 3m
       interval: 1m
+    reconcile:
+      cron: "0 30 4 * * *"
   crypto:
     phone-key: ${PHONE_KEY}
   jwt:

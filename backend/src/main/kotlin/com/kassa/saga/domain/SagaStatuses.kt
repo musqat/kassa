@@ -1,5 +1,9 @@
 package com.kassa.saga.domain
 
+// 사가 전체의 상태
+// RUNNING ─ 다 끝남 ─▶ COMPLETED
+//         └ 실패 ─▶ COMPENSATING ─ 다 되돌림 ─▶ FAILED
+//                              └ 되돌리기 실패 ─▶ NEEDS_ATTENTION
 enum class SagaStatus {
     /** 실행 중 */
     RUNNING,
@@ -7,7 +11,7 @@ enum class SagaStatus {
     /** 전부 완료 */
     COMPLETED,
 
-    /** 역순 보상 중 */
+    /** 마친 SagaStep 을 역순으로 되돌리는 중 */
     COMPENSATING,
 
     /** 보상 완료 */
@@ -17,6 +21,7 @@ enum class SagaStatus {
     NEEDS_ATTENTION,
 }
 
+// SagaStep 하나의 상태
 enum class StepStatus {
     /** 실행 전이거나 진행 중 */
     PENDING,
