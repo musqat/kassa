@@ -36,7 +36,7 @@ class InboxProcessor(
         return pending.size
     }
 
-    // 본문은 믿지 않고 대행사에 다시 묻는다. 승인 전이면 RECEIVED 로 두고 다음 주기에 다시 본다
+    // 본문에서 주문번호만 꺼내고 결제 상태는 대행사에 다시 묻는다. 승인 전이면 RECEIVED 로 둔다
     // 주문 상태는 직접 바꾸지 않고 사가를 부른다. 승인과 같은 길을 지나야 재고·장바구니가 맞는다
     private fun processOne(inbox: WebhookInbox) {
         val orderNo = orderNoOf(inbox.payload)

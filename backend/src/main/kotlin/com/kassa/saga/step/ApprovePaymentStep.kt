@@ -36,6 +36,13 @@ class ApprovePaymentStep(
         val order = orderRepository.findByOrderNoAndUserId(context.orderNo, context.userId)
             ?: throw BusinessException(ErrorCode.ORDER_NOT_FOUND)
 
+        // 확인 스케줄러가 PAID 로 확정해 둔 결제가 있으면 그걸 쓴다
+        // 새로 만들면 한 주문에 PAID 가 둘이 되어 부분 유니크 인덱스에 걸린다
+        val settled = paymentRepository.findByOrderIdAndStatus(order.id!!, PaymentStatus.PAID)
+        if (settled != null) {
+            return settled.id.toString()
+        }
+
         // 재시도면 앞서 만든 행을 다시 쓴다. 매번 만들면 REQUESTED 가 쌓인다
         val payment = paymentRepository.findByOrderIdAndStatus(order.id!!, PaymentStatus.REQUESTED)
             ?: paymentRepository.save(Payment(order.id!!, order.totalAmount))

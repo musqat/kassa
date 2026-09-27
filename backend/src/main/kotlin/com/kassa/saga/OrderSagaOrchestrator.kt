@@ -1,5 +1,6 @@
 package com.kassa.saga
 
+import com.kassa.payment.gateway.GatewayTimeoutException
 import com.kassa.saga.domain.SagaInstance
 import com.kassa.saga.domain.SagaStatus
 import com.kassa.saga.domain.StepStatus
@@ -41,6 +42,10 @@ class OrderSagaOrchestrator(
             } catch (e: Exception) {
                 recorder.stepFailed(step, e.message ?: e.javaClass.simpleName)
                 log.warn("사가 단계 실패: {} {}", orderNo, handler.name, e)
+
+                // 타임아웃이면 보상하지 않고 RUNNING 으로 둔다. 승인 여부를 모르는데 되돌리면
+                // 멀쩡한 결제를 취소한다. 확인 스케줄러가 결과를 확정한 뒤 복구가 이어받는다
+                if (e is GatewayTimeoutException) throw e
 
                 compensate(orderNo, userId, approvalToken, instance)
                 throw e

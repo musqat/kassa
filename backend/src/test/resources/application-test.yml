@@ -30,6 +30,10 @@ app:
       enabled: false
       interval: 5s
       max-attempts: 5
+    result-check:
+      enabled: false
+      stale-after: 3m
+      interval: 1m
   crypto:
     phone-key: a2Fzc2EtdGVzdC1waG9uZS1rZXktbm90LXJlYWwhISE=
   jwt:

@@ -60,6 +60,9 @@ app:
     inbox:
       interval: 5s
       max-attempts: 5
+    result-check:
+      stale-after: 3m
+      interval: 1m
   crypto:
     phone-key: ${PHONE_KEY}
   jwt:
