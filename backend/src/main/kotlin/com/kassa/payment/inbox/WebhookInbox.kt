@@ -9,7 +9,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import java.time.Instant
 
-// 웹훅 원문. 처리는 워커가 따로 한다
+// 받은 웹훅 원문과 처리 상태
 @Entity
 class WebhookInbox(
     eventId: String,
