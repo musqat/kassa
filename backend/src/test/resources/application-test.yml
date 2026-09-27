@@ -25,6 +25,11 @@ app:
       enabled: false
       stuck-after: 10m
       interval: 5m
+  payment:
+    inbox:
+      enabled: false
+      interval: 5s
+      max-attempts: 5
   crypto:
     phone-key: a2Fzc2EtdGVzdC1waG9uZS1rZXktbm90LXJlYWwhISE=
   jwt:
