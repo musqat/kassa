@@ -98,6 +98,6 @@ CREATE TABLE reconcile_diff (
 
 CREATE INDEX ix_reconcile_diff_date ON reconcile_diff (target_date, kind);
 
--- 같은 날짜를 다시 대사해도 같은 건이 쌓이지 않는다
+-- 같은 날짜를 다시 대조해도 같은 건이 쌓이지 않는다
 CREATE UNIQUE INDEX uk_reconcile_diff_target ON reconcile_diff (target_date, order_no, kind)
     WHERE order_no IS NOT NULL;

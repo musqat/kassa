@@ -128,7 +128,7 @@ class FakePaymentGateway(private val clock: Clock) : PaymentGateway {
         preRegisterFails = false
     }
 
-    /** 대행사 쪽에만 결제 생성. 정산 대사용 */
+    /** 대행사 쪽에만 결제 생성. 기록 대조 테스트용 */
     fun plant(orderNo: String, amount: Long, at: Instant) {
         payments[orderNo] = paid(orderNo, amount, at)
     }

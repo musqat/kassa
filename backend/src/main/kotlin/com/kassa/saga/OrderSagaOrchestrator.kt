@@ -1,5 +1,6 @@
 package com.kassa.saga
 
+import com.kassa.payment.gateway.GatewayTimeoutException
 import com.kassa.saga.domain.SagaInstance
 import com.kassa.saga.domain.SagaStatus
 import com.kassa.saga.domain.StepStatus
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Component
 
 private val log = LoggerFactory.getLogger(OrderSagaOrchestrator::class.java)
 
-// 단계를 순서대로 실행하고 결과를 SagaRecorder 에 남긴다
+// SagaStep 을 순서대로 실행하고 결과를 SagaRecorder 에 남긴다
 @Component
 class OrderSagaOrchestrator(
     private val recorder: SagaRecorder,
@@ -26,7 +27,7 @@ class OrderSagaOrchestrator(
     fun start(orderNo: String, userId: Long, approvalToken: String?) {
         val instance = recorder.startOrFind(orderNo)
 
-        // 끝난 사가는 다시 돌지 않는다. 단계를 또 실행하면 결제가 두 건 된다
+        // 끝난 사가는 다시 돌지 않는다. SagaStep 을 또 실행하면 결제가 두 건 된다
         if (instance.status == SagaStatus.COMPLETED) {
             return
         }
@@ -42,6 +43,10 @@ class OrderSagaOrchestrator(
                 recorder.stepFailed(step, e.message ?: e.javaClass.simpleName)
                 log.warn("사가 단계 실패: {} {}", orderNo, handler.name, e)
 
+                // 타임아웃이면 보상하지 않고 RUNNING 으로 둔다. 승인 여부를 모르는데 되돌리면
+                // 멀쩡한 결제를 취소한다. 확인 스케줄러가 결과를 확정한 뒤 복구가 이어받는다
+                if (e is GatewayTimeoutException) throw e
+
                 compensate(orderNo, userId, approvalToken, instance)
                 throw e
             }
@@ -50,7 +55,9 @@ class OrderSagaOrchestrator(
         recorder.complete(instance)
     }
 
-    // 마친 단계를 역순으로 되돌린다. 예외를 밖으로 던지지 않는다
+    // 마친 SagaStep 을 역순으로 되돌린다(보상). 나중 단계가 앞 단계 결과에 기대고 있어서다
+    // 하나라도 못 되돌리면 뒤는 손대지 않고 NEEDS_ATTENTION 으로 멈춘다
+    // 예외를 밖으로 던지지 않는다. 부른 쪽이 원래 예외를 던진다
     private fun compensate(
         orderNo: String,
         userId: Long,
@@ -74,7 +81,7 @@ class OrderSagaOrchestrator(
         recorder.compensated(instance)
     }
 
-    // 단계가 멱등키와 앞선 payload 를 읽는 통로
+    // SagaStep 이 멱등키와 앞선 payload 를 읽는 통로
     private fun contextFor(
         orderNo: String,
         userId: Long,
