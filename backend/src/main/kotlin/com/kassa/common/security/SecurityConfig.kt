@@ -32,6 +32,8 @@ class SecurityConfig(
                 authorize(HttpMethod.POST, "/api/auth/login-id/find", permitAll)
                 authorize(HttpMethod.POST, "/api/auth/password-reset", permitAll)
                 authorize(HttpMethod.POST, "/api/auth/password-reset/confirm", permitAll)
+                // 대행사는 토큰이 없다. 발신자 확인은 서명으로 한다
+                authorize(HttpMethod.POST, "/api/payments/webhook", permitAll)
                 authorize("/actuator/health/**", permitAll)
                 authorize("/swagger-ui/**", permitAll)
                 authorize("/swagger-ui.html", permitAll)

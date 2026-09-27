@@ -56,6 +56,10 @@ app:
     recovery:
       stuck-after: 10m
       interval: 5m
+  payment:
+    inbox:
+      interval: 5s
+      max-attempts: 5
   crypto:
     phone-key: ${PHONE_KEY}
   jwt:
