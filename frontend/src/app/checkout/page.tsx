@@ -43,7 +43,7 @@ export default function CheckoutPage() {
     setPending(true);
 
     try {
-      const { orderNo } = await placeOrder({
+      const { orderNo, payable } = await placeOrder({
         receiver,
         phone,
         zipcode,
@@ -51,7 +51,9 @@ export default function CheckoutPage() {
         addr2,
         saveAddress: true,
       });
-      router.push(`/orders/${orderNo}`);
+
+      // 금액 사전 등록이 실패하면 결제창을 열 수 없다. 주문은 남고 만료 스케줄러가 정리한다
+      router.push(payable ? `/payments/${orderNo}` : `/orders/${orderNo}`);
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) {
         router.replace("/login");

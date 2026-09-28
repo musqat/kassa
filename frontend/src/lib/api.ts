@@ -68,7 +68,25 @@ export type Order = {
   addr1: string;
   addr2: string | null;
   createdAt: string;
+  paidAt: string | null;
+  // 결제 수단은 상세에서만 온다. 목록에서는 null
+  method: string | null;
 };
+
+export type PlaceOrderResult = {
+  orderNo: string;
+  totalAmount: number;
+  // 금액 사전 등록에 실패하면 결제창을 열 수 없다
+  payable: boolean;
+};
+
+export type ConfirmPaymentResult = {
+  orderNo: string;
+  status: OrderStatus;
+};
+
+// 가짜 게이트웨이가 다음 승인을 어떻게 끝낼지
+export type FakeOutcome = "SUCCESS" | "FAIL" | "TIMEOUT";
 
 export type PlaceOrderInput = {
   receiver: string;
@@ -243,9 +261,7 @@ export function removeCartItem(itemId: number): Promise<void> {
   return request<void>(`/api/cart/items/${itemId}`, { method: "DELETE", auth: true });
 }
 
-export function placeOrder(
-  input: PlaceOrderInput,
-): Promise<{ orderNo: string; totalAmount: number }> {
+export function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResult> {
   return request("/api/orders", { method: "POST", body: input, auth: true });
 }
 
@@ -259,4 +275,29 @@ export function getOrder(orderNo: string): Promise<Order> {
 
 export function cancelOrder(orderNo: string): Promise<void> {
   return request<void>(`/api/orders/${orderNo}/cancel`, { method: "POST", auth: true });
+}
+
+// 대행사 승인을 걸고 주문을 확정한다. approvalToken 은 결제창이 돌려준 값
+export function confirmPayment(
+  orderNo: string,
+  approvalToken?: string,
+): Promise<ConfirmPaymentResult> {
+  return request("/api/payments/confirm", {
+    method: "POST",
+    body: { orderNo, approvalToken },
+    auth: true,
+  });
+}
+
+// 아래 셋은 가짜 게이트웨이 스위치다. 로컬에서만 열려 있다
+export function setFakeOutcome(outcome: FakeOutcome): Promise<void> {
+  return request<void>(`/api/admin/fake-gateway/outcome?outcome=${outcome}`, { method: "POST" });
+}
+
+export function setFakeAmount(amount: number): Promise<void> {
+  return request<void>(`/api/admin/fake-gateway/amount?amount=${amount}`, { method: "POST" });
+}
+
+export function resetFakeGateway(): Promise<void> {
+  return request<void>("/api/admin/fake-gateway/reset", { method: "POST" });
 }
