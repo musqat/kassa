@@ -110,16 +110,30 @@ export default function OrderDetailPage() {
         </p>
       </section>
 
+      {order.paidAt && (
+        <section className="border-line flex flex-col gap-2 rounded-[var(--radius-card)] border bg-white px-6 py-6 text-sm shadow-[var(--shadow-card)]">
+          <h2 className="text-sm font-bold">결제</h2>
+          <div className="flex justify-between">
+            <span className="text-muted">결제 수단</span>
+            <span>{order.method === "CARD" ? "카드" : (order.method ?? "-")}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted">결제 시각</span>
+            <span>{formatDateTime(order.paidAt)}</span>
+          </div>
+        </section>
+      )}
+
       {error && <p className="text-danger text-xs">{error}</p>}
 
-      {order.status === "PENDING" && (
+      {(order.status === "PENDING" || order.status === "PAID") && (
         <button
           type="button"
           onClick={handleCancel}
           disabled={pending}
           className="border-line text-danger h-12 rounded-[var(--radius-field)] border bg-white text-sm disabled:opacity-40"
         >
-          주문 취소
+          {order.status === "PAID" ? "결제 취소" : "주문 취소"}
         </button>
       )}
 
