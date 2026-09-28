@@ -83,6 +83,12 @@ class Product(
         stock -= quantity
     }
 
+    // 결제를 취소해 나갔던 수량이 돌아온다. stock 만 늘린다
+    // reservedStock 까지 늘리면 아무도 안 잡은 수량이 선점 상태로 남는다
+    fun restore(quantity: Int) {
+        stock += quantity
+    }
+
     fun changePrice(price: Long) {
         this.price = price
     }

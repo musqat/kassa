@@ -90,14 +90,17 @@ class Order(
         }
     }
 
-    /** 취소 저장. PENDING 에서만 */
+    // 취소 저장. PENDING 과 PAID 에서만
+    // 돈을 되돌리는 것과 재고를 되돌리는 것은 부르는 쪽이 한다
     fun cancel(now: Instant) {
-        if (status != OrderStatus.PENDING) {
-            throw BusinessException(ErrorCode.ORDER_NOT_CANCELABLE)
-        }
+        when (status) {
+            OrderStatus.PENDING, OrderStatus.PAID -> {
+                status = OrderStatus.CANCELED
+                closedAt = now
+            }
 
-        status = OrderStatus.CANCELED
-        closedAt = now
+            else -> throw BusinessException(ErrorCode.ORDER_NOT_CANCELABLE)
+        }
     }
 
     /** 만료 저장. PENDING 에서만 */

@@ -25,10 +25,13 @@ data class OrderResponse(
     val addr1: String,
     val addr2: String?,
     val createdAt: Instant,
+    val paidAt: Instant?,
+    // 결제 수단은 Payment 에 있다. 목록에서는 읽지 않아 null 이다
+    val method: String?,
 ) {
     companion object {
         // phone 은 복호화한 뒤 가린 값을 받는다
-        fun of(order: Order, phone: String) = OrderResponse(
+        fun of(order: Order, phone: String, method: String? = null) = OrderResponse(
             orderNo = order.orderNo,
             status = order.status,
             itemAmount = order.itemAmount,
@@ -43,6 +46,8 @@ data class OrderResponse(
             addr1 = order.addr1,
             addr2 = order.addr2,
             createdAt = order.createdAt,
+            paidAt = order.paidAt,
+            method = method,
         )
     }
 }

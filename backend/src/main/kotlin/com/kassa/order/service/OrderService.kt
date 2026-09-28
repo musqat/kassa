@@ -17,6 +17,8 @@ import com.kassa.order.dto.PlaceOrderRequest
 import com.kassa.order.dto.PlaceOrderResponse
 import com.kassa.order.repository.AddressRepository
 import com.kassa.order.repository.OrderRepository
+import com.kassa.payment.domain.PaymentStatus
+import com.kassa.payment.repository.PaymentRepository
 import com.kassa.pricing.ShippingPolicy
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -31,6 +33,7 @@ class OrderService(
     private val addressRepository: AddressRepository,
     private val cartItemRepository: CartItemRepository,
     private val productRepository: ProductRepository,
+    private val paymentRepository: PaymentRepository,
     private val orderNoGenerator: OrderNoGenerator,
     private val phoneCipher: PhoneCipher,
     private val clock: Clock,
@@ -86,16 +89,27 @@ class OrderService(
 
     }
 
-    // 주문 취소와 선점 해제
+    // 주문을 CANCELED 로 닫고 재고를 되돌린다. 대행사 취소는 부르는 쪽이 이미 끝냈다
+    // PENDING 이었으면 선점만 풀고, PAID 였으면 stock 에서 빠진 수량을 되돌린다
     @Transactional
-    fun cancel(userId: Long, orderNo: String) {
+    fun closeCanceled(userId: Long, orderNo: String) {
         val now = Instant.now(clock)
         val order = orderRepository.findByOrderNoAndUserId(orderNo, userId)
             ?: throw BusinessException(ErrorCode.ORDER_NOT_FOUND)
-
+        // cancel 뒤에는 CANCELED 라 원래 상태를 알 수 없다
+        val wasPaid = order.status == OrderStatus.PAID
         order.cancel(now)
 
-        releaseStock(order)
+        val locked = productRepository.findAllForUpdate(order.items.map { it.productId })
+            .associateBy { it.id!! }
+        order.items.forEach { item ->
+            val product = locked.getValue(item.productId)
+            if (wasPaid) {
+                product.restore(item.quantity)
+            } else {
+                product.releaseReservation(item.quantity)
+            }
+        }
     }
 
     // 결제 없이 기한이 지난 주문을 접는다. 한 번에 EXPIRE_BATCH 건씩
@@ -134,12 +148,14 @@ class OrderService(
         val order = orderRepository.findByOrderNoAndUserId(orderNo, userId)
             ?: throw BusinessException(ErrorCode.ORDER_NOT_FOUND)
 
-        return toResponse(order)
+        // 상세에서만 결제 수단을 같이 읽는다. 목록에서 읽으면 주문마다 조회가 한 번씩 는다
+        val method = paymentRepository.findByOrderIdAndStatus(order.id!!, PaymentStatus.PAID)?.method
 
+        return toResponse(order, method)
     }
 
-    private fun toResponse(order: Order): OrderResponse =
-        OrderResponse.of(order, maskPhone(phoneCipher.decrypt(order.phoneEnc)))
+    private fun toResponse(order: Order, method: String? = null): OrderResponse =
+        OrderResponse.of(order, maskPhone(phoneCipher.decrypt(order.phoneEnc)), method)
 
     // 010-1234-5678 을 010-****-5678 로
     private fun maskPhone(phone: String): String {

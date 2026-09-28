@@ -5,6 +5,7 @@ import com.kassa.order.dto.OrderResponse
 import com.kassa.order.dto.PlaceOrderRequest
 import com.kassa.order.dto.PlaceOrderResponse
 import com.kassa.order.service.OrderService
+import com.kassa.payment.service.CancelOrderService
 import com.kassa.payment.service.PaymentPreparer
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController
 class OrderController(
     private val orderService: OrderService,
     private val paymentPreparer: PaymentPreparer,
+    private val cancelOrderService: CancelOrderService,
 ) {
 
     @Operation(
@@ -58,13 +60,16 @@ class OrderController(
         @PathVariable orderNo: String,
     ): OrderResponse = orderService.findMyOrder(jwt.userId(), orderNo)
 
-    @Operation(summary = "주문 취소", description = "결제 전 주문만 취소할 수 있다. 선점한 재고가 풀린다")
+    @Operation(
+        summary = "주문 취소",
+        description = "결제 전이면 선점이 풀리고, 결제된 뒤면 대행사 취소까지 부른다",
+    )
     @PostMapping("/{orderNo}/cancel")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun cancel(
         @AuthenticationPrincipal jwt: Jwt,
         @PathVariable orderNo: String,
     ) {
-        orderService.cancel(jwt.userId(), orderNo)
+        cancelOrderService.cancel(jwt.userId(), orderNo)
     }
 }
