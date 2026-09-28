@@ -118,9 +118,7 @@ export default function PaymentPage() {
 
       <section className="border-line flex flex-col gap-3 rounded-[var(--radius-card)] border bg-white px-6 py-6 shadow-[var(--shadow-card)]">
         <h2 className="text-sm font-bold">결과 고르기</h2>
-        <p className="text-subtle text-xs">
-          대행사를 붙이기 전이라 결과를 직접 고릅니다.
-        </p>
+        <p className="text-subtle text-xs">대행사를 붙이기 전이라 결과를 직접 고릅니다.</p>
 
         <div className="mt-2 flex flex-col gap-2">
           {CHOICES.map((choice) => (
