@@ -210,6 +210,35 @@ class SagaFlowTest : IntegrationTest() {
     }
 
     @Test
+    fun `대행사가 거절하면 409 PAY_003`() {
+        gateway.nextResult = FakePaymentGateway.Outcome.FAIL
+        val orderNo = placeOrder()
+
+        confirm(orderNo).andExpect {
+            status { isConflict() }
+            jsonPath("$.code") { value("PAY_003") }
+        }
+
+        val order = orderRepository.findByOrderNoAndUserId(orderNo, userId)!!
+        assertThat(order.status).isEqualTo(OrderStatus.PENDING)
+    }
+
+    @Test
+    fun `응답이 없으면 202 이고 주문은 PENDING 이다`() {
+        gateway.nextResult = FakePaymentGateway.Outcome.TIMEOUT
+        val orderNo = placeOrder()
+
+        // 실패가 아니라 결과를 모르는 상태다. 확인 스케줄러가 뒤에 정한다
+        confirm(orderNo).andExpect {
+            status { isAccepted() }
+            jsonPath("$.status") { value("PENDING") }
+        }
+
+        val instance = instanceRepository.findByOrderNo(orderNo)!!
+        assertThat(instance.status).isEqualTo(SagaStatus.RUNNING)
+    }
+
+    @Test
     fun `토큰 없이 부르면 401`() {
         mockMvc.post("/api/payments/confirm").andExpect {
             status { isUnauthorized() }

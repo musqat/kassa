@@ -17,7 +17,6 @@ import com.kassa.order.dto.PlaceOrderRequest
 import com.kassa.order.dto.PlaceOrderResponse
 import com.kassa.order.repository.AddressRepository
 import com.kassa.order.repository.OrderRepository
-import com.kassa.payment.domain.PaymentStatus
 import com.kassa.payment.repository.PaymentRepository
 import com.kassa.pricing.ShippingPolicy
 import org.springframework.stereotype.Service
@@ -149,7 +148,10 @@ class OrderService(
             ?: throw BusinessException(ErrorCode.ORDER_NOT_FOUND)
 
         // 상세에서만 결제 수단을 같이 읽는다. 목록에서 읽으면 주문마다 조회가 한 번씩 는다
-        val method = paymentRepository.findByOrderIdAndStatus(order.id!!, PaymentStatus.PAID)?.method
+        // 취소된 주문도 결제 수단을 보여주려고 상태를 가리지 않고 마지막 결제를 읽는다
+        val method = paymentRepository.findAllByOrderIdOrderByIdDesc(order.id!!)
+            .firstOrNull { it.method != null }
+            ?.method
 
         return toResponse(order, method)
     }
