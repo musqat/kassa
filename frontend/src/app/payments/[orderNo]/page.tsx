@@ -14,9 +14,10 @@ import {
   type Order,
 } from "@/lib/api";
 import { formatPrice } from "@/lib/format";
+import { openPaymentWindow } from "@/lib/toss";
 
-// 대행사를 붙이기 전이라 결제창 대신 결과를 고르는 버튼을 둔다
-// 토스를 붙이면 이 자리에 브라우저 SDK 가 들어간다
+// 토스 결제창과 가짜 게이트웨이 버튼을 같이 둔다
+// 토스 테스트 모드로는 응답 없음을 만들 수 없어 실패 경로는 버튼으로 본다
 type Choice = {
   label: string;
   outcome: FakeOutcome;
@@ -31,6 +32,12 @@ const CHOICES: Choice[] = [
   { label: "응답 없음", outcome: "TIMEOUT", hint: "결과를 모른다. 확인 스케줄러가 3분 뒤 정한다" },
   { label: "금액 조작", outcome: "SUCCESS", amount: 100, hint: "등록 금액과 달라 거절된다" },
 ];
+
+// 결제창에 보여 줄 이름. 첫 상품에 나머지 건수를 붙인다
+function orderNameOf(order: Order): string {
+  const first = order.items[0];
+  return order.items.length > 1 ? `${first.name} 외 ${order.items.length - 1}건` : first.name;
+}
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -82,6 +89,26 @@ export default function PaymentPage() {
     }
   }
 
+  // 토스 결제창을 연다. 인증이 끝나면 /payments/success 로 돌아온다
+  async function payWithToss() {
+    if (order === null) {
+      return;
+    }
+    setPending(true);
+    setError(null);
+    try {
+      await openPaymentWindow({
+        orderNo: order.orderNo,
+        amount: order.totalAmount,
+        orderName: orderNameOf(order),
+      });
+    } catch (e) {
+      // 결제창을 닫아도 여기로 온다
+      setError(e instanceof Error ? e.message : "결제창을 열지 못했습니다");
+      setPending(false);
+    }
+  }
+
   if (order === null) {
     return (
       <main className="mx-auto w-full max-w-[560px] px-5 py-14">
@@ -115,6 +142,15 @@ export default function PaymentPage() {
           <span className="text-base font-bold">{formatPrice(order.totalAmount)}</span>
         </div>
       </section>
+
+      <button
+        type="button"
+        onClick={payWithToss}
+        disabled={pending}
+        className="border-line h-12 rounded-[var(--radius-field)] border bg-black text-sm text-white disabled:opacity-40"
+      >
+        토스로 결제하기
+      </button>
 
       <section className="border-line flex flex-col gap-3 rounded-[var(--radius-card)] border bg-white px-6 py-6 shadow-[var(--shadow-card)]">
         <h2 className="text-sm font-bold">결과 고르기</h2>

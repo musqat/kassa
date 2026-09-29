@@ -4,12 +4,15 @@ import java.time.Clock
 import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 // 대행사 대신 메모리로 결제를 흉내 낸다. 배포 프로파일에는 올리지 않는다
+// 토스를 고르면 빈이 올라오지 않는다. 둘 다 올라오면 주입할 구현체가 둘이라 뜨지 않는다
 @Component
 @Profile("local", "test")
+@ConditionalOnProperty(name = ["app.payment.gateway"], havingValue = "fake", matchIfMissing = true)
 class FakePaymentGateway(private val clock: Clock) : PaymentGateway {
 
     enum class Outcome {

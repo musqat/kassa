@@ -28,6 +28,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-security-oauth2-resource-server")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
+	implementation("org.springframework.boot:spring-boot-starter-restclient")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
 	implementation("org.flywaydb:flyway-database-postgresql")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -60,8 +61,21 @@ allOpen {
 	annotation("jakarta.persistence.Embeddable")
 }
 
-tasks.withType<Test> {
-	useJUnitPlatform()
+tasks.test {
+	// toss 태그는 실제 대행사를 부른다. 평소 빌드에서는 뺀다
+	useJUnitPlatform {
+		excludeTags("toss")
+	}
+}
+
+// 토스 연동만 돌린다. TOSS_SECRET_KEY 가 없으면 건너뛴다
+tasks.register<Test>("tossTest") {
+	group = "verification"
+	testClassesDirs = sourceSets.test.get().output.classesDirs
+	classpath = sourceSets.test.get().runtimeClasspath
+	useJUnitPlatform {
+		includeTags("toss")
+	}
 }
 
 tasks.withType<JavaCompile> {

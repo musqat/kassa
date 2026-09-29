@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { AddToCart } from "@/components/cart/AddToCart";
+import { ProductThumb } from "@/components/ProductThumb";
 import { RecentlyViewed } from "@/components/RecentlyViewed";
 import { ApiError, getProduct } from "@/lib/api";
 import { formatPrice } from "@/lib/format";
@@ -20,8 +21,12 @@ export default async function ProductPage({ params }: PageProps<"/products/[id]"
   return (
     <main className="mx-auto flex w-full max-w-[900px] flex-col gap-10 px-5 py-10 lg:px-12">
       <div className="flex flex-col gap-8 sm:flex-row sm:gap-10">
-        <div className="bg-surface text-subtle flex aspect-square w-full shrink-0 items-center justify-center rounded-[var(--radius-card)] text-xs sm:w-[380px]">
-          상품 이미지
+        <div className="bg-surface text-subtle relative flex aspect-square w-full shrink-0 items-center justify-center overflow-hidden rounded-[var(--radius-card)] text-xs sm:w-[380px]">
+          <ProductThumb
+            src={product.thumbnailUrl}
+            alt={product.name}
+            sizes="(min-width: 640px) 380px, 100vw"
+          />
         </div>
 
         <div className="flex flex-1 flex-col gap-6">
@@ -35,7 +40,14 @@ export default async function ProductPage({ params }: PageProps<"/products/[id]"
         </div>
       </div>
 
-      <RecentlyViewed product={{ id: product.id, name: product.name, price: product.price }} />
+      <RecentlyViewed
+        product={{
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          thumbnailUrl: product.thumbnailUrl,
+        }}
+      />
     </main>
   );
 }

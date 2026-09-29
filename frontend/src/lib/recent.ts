@@ -11,6 +11,7 @@ export type RecentProduct = {
   id: number;
   name: string;
   price: number;
+  thumbnailUrl?: string | null;
 };
 
 function subscribe(onChange: () => void) {

@@ -31,6 +31,7 @@ export type CartItem = {
   itemId: number;
   productId: number;
   name: string;
+  thumbnailUrl: string | null;
   price: number;
   quantity: number;
   lineAmount: number;
