@@ -11,6 +11,7 @@ import {
   type Cart,
   type CartItem,
 } from "@/lib/api";
+import { ProductThumb } from "@/components/ProductThumb";
 import { formatPrice } from "@/lib/format";
 
 export default function CartPage() {
@@ -129,8 +130,8 @@ function CartRow({ item, onChange, onRemove }: RowProps) {
         item.orderable ? "" : "opacity-60"
       }`}
     >
-      <div className="bg-surface text-subtle flex size-16 shrink-0 items-center justify-center rounded-[var(--radius-field)] text-[10px]">
-        이미지
+      <div className="bg-surface text-subtle relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-[var(--radius-field)] text-[10px]">
+        <ProductThumb src={item.thumbnailUrl} alt={item.name} sizes="64px" />
       </div>
 
       <div className="flex flex-1 flex-col gap-1">

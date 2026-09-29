@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
+import { ProductThumb } from "@/components/ProductThumb";
 import { formatPrice } from "@/lib/format";
 import { parseRecent, recordRecent, useRecentRaw, type RecentProduct } from "@/lib/recent";
 
@@ -54,8 +55,8 @@ function RecentList({ items }: { items: RecentProduct[] }) {
             href={`/products/${item.id}`}
             className="flex w-[160px] items-center gap-3 lg:w-auto"
           >
-            <span className="bg-surface text-subtle flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-field)] text-[10px]">
-              이미지
+            <span className="bg-surface text-subtle relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-[var(--radius-field)] text-[10px]">
+              <ProductThumb src={item.thumbnailUrl ?? null} alt={item.name} sizes="44px" />
             </span>
             <span className="flex flex-col gap-0.5">
               <span className="text-[13px] leading-snug">{item.name}</span>
