@@ -65,6 +65,13 @@ app:
       interval: 1m
     reconcile:
       cron: "0 30 4 * * *"
+    gateway: ${PAYMENT_GATEWAY:fake}
+    toss:
+      base-url: https://api.tosspayments.com
+      secret-key: ${TOSS_SECRET_KEY:}
+      connect-timeout: 3s
+      read-timeout: 10s
+      transactions-timeout: 60s
   crypto:
     phone-key: ${PHONE_KEY}
   jwt:
