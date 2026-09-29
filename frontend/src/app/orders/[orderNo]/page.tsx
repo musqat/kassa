@@ -112,7 +112,9 @@ export default function OrderDetailPage() {
 
       {order.paidAt && (
         <section className="border-line flex flex-col gap-2 rounded-[var(--radius-card)] border bg-white px-6 py-6 text-sm shadow-[var(--shadow-card)]">
-          <h2 className="text-sm font-bold">결제</h2>
+          <h2 className="text-sm font-bold">
+            {order.status === "CANCELED" ? "결제 취소" : "결제"}
+          </h2>
           <div className="flex justify-between">
             <span className="text-muted">결제 수단</span>
             <span>{order.method === "CARD" ? "카드" : (order.method ?? "-")}</span>

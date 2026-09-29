@@ -78,11 +78,6 @@ export default function PaymentPage() {
       await confirmPayment(orderNo);
       router.push(`/orders/${orderNo}`);
     } catch (e) {
-      // 타임아웃은 500 이 정상이다. 결제는 진행 중이고 확인 스케줄러가 3분 뒤 정한다
-      if (choice.outcome === "TIMEOUT") {
-        router.push(`/orders/${orderNo}`);
-        return;
-      }
       setError(e instanceof ApiError ? e.message : "결제하지 못했습니다");
     } finally {
       setPending(false);
@@ -154,7 +149,9 @@ export default function PaymentPage() {
 
       <section className="border-line flex flex-col gap-3 rounded-[var(--radius-card)] border bg-white px-6 py-6 shadow-[var(--shadow-card)]">
         <h2 className="text-sm font-bold">결과 고르기</h2>
-        <p className="text-subtle text-xs">대행사를 붙이기 전이라 결과를 직접 고릅니다.</p>
+        <p className="text-subtle text-xs">
+          토스 테스트 결제로는 만들 수 없는 실패를 여기서 고릅니다.
+        </p>
 
         <div className="mt-2 flex flex-col gap-2">
           {CHOICES.map((choice) => (

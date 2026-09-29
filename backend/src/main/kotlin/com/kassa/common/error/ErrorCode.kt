@@ -45,6 +45,7 @@ enum class ErrorCode(
     // 결제 에러
     PAYMENT_AMOUNT_MISMATCH(HttpStatus.CONFLICT, "PAY_001", "결제 금액이 맞지 않습니다"),
     ORDER_NOT_PAYABLE(HttpStatus.CONFLICT, "PAY_002", "결제할 수 없는 주문입니다"),
+    PAYMENT_REJECTED(HttpStatus.CONFLICT, "PAY_003", "결제가 거절됐습니다"),
 
     // 인증 에러
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH_001", "로그인이 필요합니다"),
