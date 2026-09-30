@@ -40,7 +40,7 @@ export async function signUpAndVerify(page: Page, account: Account) {
   await page.goto(await verifyLink(account.email));
 }
 
-/** 메일핏에서 그 주소로 온 마지막 메일을 찾아 인증 링크를 꺼낸다 */
+/** Mailpit에서 그 주소로 온 마지막 메일을 찾아 인증 링크를 꺼낸다 */
 async function verifyLink(email: string): Promise<string> {
   // 메일은 가입 직후 비동기로 들어온다. 몇 번 다시 본다
   for (let attempt = 0; attempt < 20; attempt += 1) {
