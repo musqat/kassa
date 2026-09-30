@@ -9,6 +9,7 @@ import com.kassa.order.domain.OrderStatus
 import com.kassa.order.repository.OrderRepository
 import com.kassa.payment.gateway.FakePaymentGateway
 import com.kassa.support.IntegrationTest
+import com.kassa.user.domain.Role
 import com.kassa.user.domain.User
 import com.kassa.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -52,7 +53,7 @@ class InboxWorkerTest : IntegrationTest() {
                 .apply { verifyEmail(Instant.now()) },
         )
         userId = user.id!!
-        token = tokenIssuer.issue(userId, Instant.now()).value
+        token = tokenIssuer.issue(userId, Role.USER, Instant.now()).value
     }
 
     private fun placeOrder(quantity: Int = 2): String {

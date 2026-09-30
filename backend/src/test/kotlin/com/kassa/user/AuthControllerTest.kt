@@ -7,6 +7,7 @@ import com.kassa.order.repository.OrderRepository
 import com.kassa.support.IntegrationTest
 import com.kassa.support.MutableClock
 import com.kassa.support.MutableClockConfig
+import com.kassa.user.domain.Role
 import com.kassa.user.domain.User
 import com.kassa.user.repository.EmailTokenRepository
 import com.kassa.user.repository.UserRepository
@@ -102,7 +103,7 @@ class AuthControllerTest : IntegrationTest() {
 
     @Test
     fun `토큰이 있으면 내 정보를 준다`() {
-        val token = tokenIssuer.issue(user.id!!, Instant.now()).value
+        val token = tokenIssuer.issue(user.id!!, Role.USER, Instant.now()).value
         me(token).andExpect {
             status { isOk() }
             jsonPath("$.email") { value("a@example.com") }
@@ -158,7 +159,7 @@ class AuthControllerTest : IntegrationTest() {
 
     @Test
     fun `만료된 토큰은 401`() {
-        val expiredToken = tokenIssuer.issue(user.id!!, Instant.now().minus(Duration.ofHours(3))).value
+        val expiredToken = tokenIssuer.issue(user.id!!, Role.USER, Instant.now().minus(Duration.ofHours(3))).value
         me(token = expiredToken).andExpect {
             status { isUnauthorized() }
             jsonPath("$.code") { value("AUTH_001") }
@@ -167,7 +168,7 @@ class AuthControllerTest : IntegrationTest() {
 
     @Test
     fun `토큰이 있어도 상품 조회는 된다`() {
-        val token = tokenIssuer.issue(user.id!!, Instant.now()).value
+        val token = tokenIssuer.issue(user.id!!, Role.USER, Instant.now()).value
         mockMvc.get("/api/products") {
             header("Authorization", "Bearer $token")
         }.andExpect {

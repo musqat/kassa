@@ -4,6 +4,7 @@ import com.kassa.cart.repository.CartItemRepository
 import com.kassa.catalog.domain.ProductStatus
 import com.kassa.catalog.repository.ProductRepository
 import com.kassa.common.crypto.PhoneCipher
+import com.kassa.common.crypto.maskPhone
 import com.kassa.common.error.BusinessException
 import com.kassa.common.error.ErrorCode
 import com.kassa.order.domain.Address
@@ -158,13 +159,6 @@ class OrderService(
 
     private fun toResponse(order: Order, method: String? = null): OrderResponse =
         OrderResponse.of(order, maskPhone(phoneCipher.decrypt(order.phoneEnc)), method)
-
-    // 010-1234-5678 을 010-****-5678 로
-    private fun maskPhone(phone: String): String {
-        val digits = phone.filter { it.isDigit() }
-        if (digits.length < 8) return "***"
-        return digits.take(3) + "-****-" + digits.takeLast(4)
-    }
 
     // 드물지만 겹칠 수 있다. 한 번 더 만들어 보고 그래도 겹치면 예외
     private fun nextOrderNo(now: Instant): String {

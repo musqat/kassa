@@ -18,5 +18,11 @@ interface CartItemRepository : JpaRepository<CartItem, Long> {
 
     fun findByUserIdAndProductId(userId: Long, productId: Long): CartItem?
 
+    // 상품을 지울 수 있는지 볼 때 쓴다
+    fun existsByProductId(productId: Long): Boolean
+
+    // 상품을 지우면 담아 둔 항목도 같이 사라진다
+    fun deleteAllByProductId(productId: Long)
+
     fun deleteAllByUserId(userId: Long)
 }

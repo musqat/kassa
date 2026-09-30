@@ -2,6 +2,8 @@ package com.kassa.user.domain
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -33,6 +35,10 @@ class User(
         protected set
 
     var name: String = name
+        protected set
+
+    @Enumerated(EnumType.STRING)
+    var role: Role = Role.USER
         protected set
 
     var loginFailCount: Int = 0
@@ -84,6 +90,11 @@ class User(
         return emailVerifiedAt != null
     }
 
+    /** 관리자로 올린다 */
+    fun promote() {
+        role = Role.ADMIN
+    }
+
     fun verifyEmail(now: Instant) {
         if (emailVerifiedAt == null) {
             emailVerifiedAt = now
@@ -103,9 +114,9 @@ class User(
 
     /** 설정 화면에서 바꾼다. 모든 기기가 로그아웃된다 */
     fun changePassword(passwordHash: String, now: Instant) {
-         this.passwordHash = passwordHash
+        this.passwordHash = passwordHash
 
-         tokenValidAfter = now.truncatedTo(ChronoUnit.SECONDS)
+        tokenValidAfter = now.truncatedTo(ChronoUnit.SECONDS)
     }
 
     /** 재설정 링크로 비밀번호를 바꾼다 */

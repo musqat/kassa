@@ -10,6 +10,7 @@ import com.kassa.order.domain.OrderStatus
 import com.kassa.order.repository.AddressRepository
 import com.kassa.order.repository.OrderRepository
 import com.kassa.support.IntegrationTest
+import com.kassa.user.domain.Role
 import com.kassa.user.domain.User
 import com.kassa.user.repository.EmailTokenRepository
 import com.kassa.user.repository.UserRepository
@@ -61,7 +62,7 @@ class OrderCancelTest : IntegrationTest() {
                 .apply { verifyEmail(Instant.now()) },
         )
         lastUserId = user.id!!
-        return tokenIssuer.issue(user.id!!, Instant.now()).value
+        return tokenIssuer.issue(user.id!!, Role.USER, Instant.now()).value
     }
 
     private fun placeOrder(withToken: String = token, quantity: Int = 2): String {

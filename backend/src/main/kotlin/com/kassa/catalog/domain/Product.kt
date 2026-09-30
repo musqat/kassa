@@ -16,6 +16,9 @@ enum class ProductStatus {
     ON_SALE,
     SOLD_OUT,
     HIDDEN,
+
+    /** 판매 종료. 되돌리지 않는다 */
+    DELETED,
     ;
 
     companion object {
@@ -87,6 +90,26 @@ class Product(
     // reservedStock 까지 늘리면 아무도 안 잡은 수량이 선점 상태로 남는다
     fun restore(quantity: Int) {
         stock += quantity
+    }
+
+    // 관리자가 창고 수량을 고친다. 절대값으로 받는다
+    fun changeStock(stock: Int) {
+        if (stock < 0) {
+            throw BusinessException(ErrorCode.INVALID_REQUEST)
+        }
+        if (stock < reservedStock) {
+            throw BusinessException(ErrorCode.INVALID_REQUEST, "선점된 수량보다 적게 내릴 수 없습니다")
+        }
+
+        this.stock = stock
+    }
+
+    /** 이름·가격·사진·분류를 한 번에 고친다 */
+    fun edit(name: String, price: Long, thumbnailUrl: String?, category: Category) {
+        this.name = name
+        this.price = price
+        this.thumbnailUrl = thumbnailUrl
+        this.category = category
     }
 
     fun changePrice(price: Long) {

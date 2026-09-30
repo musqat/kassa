@@ -9,6 +9,7 @@ import com.kassa.common.security.TokenIssuer
 import com.kassa.order.repository.AddressRepository
 import com.kassa.order.repository.OrderRepository
 import com.kassa.support.IntegrationTest
+import com.kassa.user.domain.Role
 import com.kassa.user.domain.User
 import com.kassa.user.repository.EmailTokenRepository
 import com.kassa.user.repository.UserRepository
@@ -58,7 +59,7 @@ class OrderQueryTest : IntegrationTest() {
             User(loginId, email, passwordEncoder.encode("abcd1234")!!, "홍길동")
                 .apply { verifyEmail(Instant.now()) },
         )
-        return tokenIssuer.issue(user.id!!, Instant.now()).value
+        return tokenIssuer.issue(user.id!!, Role.USER, Instant.now()).value
     }
 
     private fun addToCart(productId: Long, quantity: Int, withToken: String) {

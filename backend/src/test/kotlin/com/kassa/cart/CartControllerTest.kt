@@ -10,6 +10,7 @@ import com.kassa.catalog.repository.CategoryRepository
 import com.kassa.catalog.repository.ProductRepository
 import com.kassa.common.security.TokenIssuer
 import com.kassa.support.IntegrationTest
+import com.kassa.user.domain.Role
 import com.kassa.user.domain.User
 import com.kassa.user.repository.EmailTokenRepository
 import com.kassa.user.repository.UserRepository
@@ -89,7 +90,7 @@ class CartControllerTest : IntegrationTest() {
                 .apply { verifyEmail(Instant.now()) },
         )
         lastUserId = user.id!!
-        return tokenIssuer.issue(user.id!!, Instant.now()).value
+        return tokenIssuer.issue(user.id!!, Role.USER, Instant.now()).value
     }
 
     private fun getCart(withToken: String? = token): ResultActionsDsl = mockMvc.get("/api/cart") {

@@ -11,6 +11,7 @@ import com.kassa.order.repository.OrderRepository
 import com.kassa.payment.gateway.FakePaymentGateway
 import com.kassa.payment.gateway.GatewayException
 import com.kassa.support.IntegrationTest
+import com.kassa.user.domain.Role
 import com.kassa.user.domain.User
 import com.kassa.user.repository.EmailTokenRepository
 import com.kassa.user.repository.UserRepository
@@ -76,7 +77,7 @@ class PreRegisterTest : IntegrationTest() {
             User("hong01", "a@example.com", passwordEncoder.encode("abcd1234")!!, "홍길동")
                 .apply { verifyEmail(Instant.now()) },
         )
-        token = tokenIssuer.issue(user.id!!, Instant.now()).value
+        token = tokenIssuer.issue(user.id!!, Role.USER, Instant.now()).value
     }
 
     /** 장바구니에 담고 주문한다. 응답 본문을 돌려준다 */

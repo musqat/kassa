@@ -2,6 +2,7 @@ package com.kassa.common.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.env.Environment
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.invoke
@@ -14,6 +15,7 @@ import org.springframework.security.web.SecurityFilterChain
 class SecurityConfig(
     private val entryPoint: ProblemAuthenticationEntryPoint,
     private val deniedHandler: ProblemAccessDeniedHandler,
+    private val environment: Environment,
 ) {
 
     @Bean
@@ -26,20 +28,17 @@ class SecurityConfig(
                 authorize(HttpMethod.GET, "/api/products/**", permitAll)
                 authorize(HttpMethod.POST, "/api/users", permitAll)
                 authorize(HttpMethod.GET, "/api/users/login-id-check", permitAll)
-                authorize(HttpMethod.POST, "/api/auth/login", permitAll)
-                authorize(HttpMethod.POST, "/api/auth/email-verification", permitAll)
-                authorize(HttpMethod.POST, "/api/auth/email-verification/confirm", permitAll)
-                authorize(HttpMethod.POST, "/api/auth/login-id/find", permitAll)
-                authorize(HttpMethod.POST, "/api/auth/password-reset", permitAll)
-                authorize(HttpMethod.POST, "/api/auth/password-reset/confirm", permitAll)
+                // 로그인 전에 쓰는 것들이라 전부 POST 다
+                authorize(HttpMethod.POST, "/api/auth/**", permitAll)
                 // 대행사는 토큰이 없다. 발신자 확인은 서명으로 한다
                 authorize(HttpMethod.POST, "/api/payments/webhook", permitAll)
-                // 역할 구분이 없어 로컬 프로파일에서만 빈이 올라온다
-                authorize("/api/admin/**", permitAll)
                 authorize("/actuator/health/**", permitAll)
-                authorize("/swagger-ui/**", permitAll)
-                authorize("/swagger-ui.html", permitAll)
-                authorize("/v3/api-docs/**", permitAll)
+
+                if (environment.matchesProfiles("local", "test")) {
+                    DEV_ONLY.forEach { authorize(it, permitAll) }
+                }
+
+                authorize("/api/admin/**", hasRole("ADMIN"))
                 authorize(anyRequest, authenticated)
             }
             oauth2ResourceServer {
@@ -58,4 +57,15 @@ class SecurityConfig(
 
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
+
+    private companion object {
+        // local·test 에서만 여는 길. 배포에는 빈도 문서도 올라오지 않는다
+        val DEV_ONLY = listOf(
+            "/api/admin/fake-gateway/**",
+            "/api/admin/reconcile",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
+        )
+    }
 }

@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+  jpa:
+    properties:
+      hibernate:
+        format_sql: false
+
+# 문서는 배포에서 닫는다. 경로를 알아도 404 다
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+# 메일 서버가 흔들려도 앱이 죽은 것으로 보이지 않게 한다. 발송 실패는 MAIL_001 로 따로 나간다
+management:
+  health:
+    mail:
+      enabled: false
+
+logging:
+  level:
+    root: INFO
+    com.kassa: INFO
