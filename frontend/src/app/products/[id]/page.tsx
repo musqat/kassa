@@ -26,6 +26,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[id]"
             src={product.thumbnailUrl}
             alt={product.name}
             sizes="(min-width: 640px) 380px, 100vw"
+            priority
           />
         </div>
 
