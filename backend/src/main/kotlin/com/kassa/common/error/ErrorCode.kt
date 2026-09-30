@@ -17,6 +17,7 @@ enum class ErrorCode(
 
     // 카탈로그 에러
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "CATALOG_001", "상품을 찾을 수 없습니다"),
+    PRODUCT_NOT_DELETABLE(HttpStatus.CONFLICT, "CATALOG_002", "주문에 들어간 상품은 지울 수 없습니다. 판매 종료로 바꾸세요"),
 
     // 회원 에러
     EMAIL_DUPLICATED(HttpStatus.CONFLICT, "USER_001", "이미 가입된 이메일입니다"),
