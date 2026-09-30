@@ -17,6 +17,7 @@ import com.kassa.saga.domain.StepStatus
 import com.kassa.saga.repository.SagaInstanceRepository
 import com.kassa.saga.repository.SagaStepRepository
 import com.kassa.support.IntegrationTest
+import com.kassa.user.domain.Role
 import com.kassa.user.domain.User
 import com.kassa.user.repository.EmailTokenRepository
 import com.kassa.user.repository.UserRepository
@@ -94,13 +95,13 @@ class SagaFlowTest : IntegrationTest() {
                 .apply { verifyEmail(Instant.now()) },
         )
         userId = user.id!!
-        token = tokenIssuer.issue(userId, Instant.now()).value
+        token = tokenIssuer.issue(userId, Role.USER, Instant.now()).value
 
         val other = userRepository.save(
             User("kim02", "b@example.com", passwordEncoder.encode("abcd1234")!!, "김철수")
                 .apply { verifyEmail(Instant.now()) },
         )
-        otherToken = tokenIssuer.issue(other.id!!, Instant.now()).value
+        otherToken = tokenIssuer.issue(other.id!!, Role.USER, Instant.now()).value
     }
 
     /** 담고 주문한다. 주문번호를 돌려준다 */

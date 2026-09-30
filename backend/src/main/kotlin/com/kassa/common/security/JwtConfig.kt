@@ -11,6 +11,8 @@ import org.springframework.security.oauth2.jwt.JwtValidators
 import org.springframework.security.oauth2.jwt.JwtEncoder
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter
 import java.time.Duration
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
@@ -33,6 +35,18 @@ class JwtConfig(
     @Bean
     fun jwtEncoder(): JwtEncoder =
         NimbusJwtEncoder.withSecretKey(key).algorithm(MacAlgorithm.HS256).build()
+
+    // 시큐리티는 기본으로 scope·scp 클레임만 권한으로 읽는다. role 을 읽게 바꾼다
+    @Bean
+    fun jwtAuthenticationConverter(): JwtAuthenticationConverter {
+        val authorities = JwtGrantedAuthoritiesConverter()
+        authorities.setAuthoritiesClaimName("role")
+        authorities.setAuthorityPrefix("ROLE_")
+
+        val converter = JwtAuthenticationConverter()
+        converter.setJwtGrantedAuthoritiesConverter(authorities)
+        return converter
+    }
 
     @Bean
     fun jwtDecoder(): JwtDecoder {

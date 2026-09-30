@@ -12,6 +12,7 @@ import com.kassa.order.domain.OrderStatus
 import com.kassa.order.repository.AddressRepository
 import com.kassa.order.repository.OrderRepository
 import com.kassa.support.IntegrationTest
+import com.kassa.user.domain.Role
 import com.kassa.user.domain.User
 import com.kassa.user.repository.EmailTokenRepository
 import com.kassa.user.repository.UserRepository
@@ -60,7 +61,7 @@ class OrderControllerTest : IntegrationTest() {
                 .apply { verifyEmail(Instant.now()) },
         )
         userId = user.id!!
-        token = tokenIssuer.issue(userId, Instant.now()).value
+        token = tokenIssuer.issue(userId, Role.USER, Instant.now()).value
     }
 
     private fun addToCart(productId: Long, quantity: Int) {

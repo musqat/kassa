@@ -9,6 +9,7 @@ import com.kassa.order.repository.OrderRepository
 import com.kassa.payment.gateway.FakePaymentGateway
 import com.kassa.payment.repository.PaymentRepository
 import com.kassa.support.IntegrationTest
+import com.kassa.user.domain.Role
 import com.kassa.user.domain.User
 import com.kassa.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -56,7 +57,7 @@ class ReconcileTest : IntegrationTest() {
             User("hong01", "a@example.com", passwordEncoder.encode("abcd1234")!!, "홍길동")
                 .apply { verifyEmail(Instant.now()) },
         )
-        token = tokenIssuer.issue(user.id!!, Instant.now()).value
+        token = tokenIssuer.issue(user.id!!, Role.USER, Instant.now()).value
     }
 
     private fun placeOrder(quantity: Int = 2): String {

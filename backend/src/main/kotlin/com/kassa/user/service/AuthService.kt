@@ -46,7 +46,7 @@ class AuthService(
         }
 
         user.recordLoginSuccess()
-        val token = tokenIssuer.issue(user.id!!, now)
+        val token = tokenIssuer.issue(user.id!!, user.role, now)
         return TokenResponse(accessToken = token.value, expiresIn = token.expiresInSeconds)
     }
 

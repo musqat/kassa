@@ -18,6 +18,7 @@ import com.kassa.saga.repository.SagaInstanceRepository
 import com.kassa.support.IntegrationTest
 import com.kassa.support.MutableClock
 import com.kassa.support.MutableClockConfig
+import com.kassa.user.domain.Role
 import com.kassa.user.domain.User
 import com.kassa.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -95,7 +96,7 @@ class PaymentResultCheckerTest : IntegrationTest() {
                 .apply { verifyEmail(Instant.now()) },
         )
         userId = user.id!!
-        token = tokenIssuer.issue(userId, Instant.now()).value
+        token = tokenIssuer.issue(userId, Role.USER, Instant.now()).value
     }
 
     private fun placeOrder(quantity: Int = 2): String {
