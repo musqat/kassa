@@ -21,11 +21,11 @@ export default defineConfig({
 
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 
-  // 이미 띄워 둔 서버가 있으면 그걸 쓴다
+  // 개발 서버는 라우트를 처음 열 때마다 컴파일한다. CI 에서는 빌드한 결과로 돌린다
   webServer: {
-    command: "npm run dev",
+    command: process.env.CI ? "npm run start" : "npm run dev",
     url: BASE_URL,
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
 });
