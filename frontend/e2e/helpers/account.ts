@@ -38,6 +38,9 @@ export async function signUpAndVerify(page: Page, account: Account) {
   }
 
   await page.goto(await verifyLink(account.email));
+
+  // 인증은 화면이 뜬 뒤에 요청으로 끝난다. 먼저 로그인하면 아직 인증 전이라 막힌다
+  await page.getByText("이메일 인증이 끝났습니다").waitFor();
 }
 
 /** Mailpit에서 그 주소로 온 마지막 메일을 찾아 인증 링크를 꺼낸다 */
