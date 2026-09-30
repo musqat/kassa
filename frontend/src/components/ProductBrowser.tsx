@@ -29,6 +29,9 @@ const compare: Record<Sort, (a: Product, b: Product) => number> = {
   priceDesc: (a, b) => b.price - a.price,
 };
 
+// 큰 화면 한 줄이 4개다. 여기까지만 먼저 받는다
+const FIRST_ROW = 4;
+
 const chip = "h-[34px] rounded-full border px-3.5 text-[13px]";
 const chipOff = "border-line-strong bg-white text-ink";
 const chipOn = "border-ink bg-ink text-white";
@@ -115,8 +118,8 @@ export function ProductBrowser({ products }: { products: Product[] }) {
           <p className="text-muted py-20 text-center text-sm">조건에 맞는 상품이 없습니다</p>
         ) : (
           <ul className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 xl:grid-cols-4">
-            {visible.map((p) => (
-              <ProductCard key={p.id} product={p} />
+            {visible.map((p, index) => (
+              <ProductCard key={p.id} product={p} priority={index < FIRST_ROW} />
             ))}
           </ul>
         )}

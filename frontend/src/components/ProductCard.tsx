@@ -3,7 +3,13 @@ import { ProductThumb } from "@/components/ProductThumb";
 import type { Product } from "@/lib/api";
 import { formatPrice } from "@/lib/format";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({
+  product,
+  priority = false,
+}: {
+  product: Product;
+  priority?: boolean;
+}) {
   const soldOut = product.status === "SOLD_OUT";
 
   return (
@@ -14,6 +20,7 @@ export function ProductCard({ product }: { product: Product }) {
             src={product.thumbnailUrl}
             alt={product.name}
             sizes="(min-width: 1024px) 220px, (min-width: 640px) 33vw, 50vw"
+            priority={priority}
           />
           {soldOut && (
             <div className="text-ink absolute inset-0 flex items-center justify-center rounded-[var(--radius-card)] bg-white/70 text-xs font-bold tracking-[0.18em]">

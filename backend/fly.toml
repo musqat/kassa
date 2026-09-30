@@ -1,0 +1,28 @@
+app = "kassa-api"
+primary_region = "icn"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  SPRING_PROFILES_ACTIVE = "prod"
+  PAYMENT_GATEWAY = "toss"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # 스케줄러가 계속 돌아야 해서 재우지 않는다
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "40s"
+    interval = "30s"
+    timeout = "5s"
+    method = "GET"
+    path = "/actuator/health/readiness"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb"
