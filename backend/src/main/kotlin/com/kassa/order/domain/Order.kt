@@ -70,6 +70,9 @@ class Order(
     var paidAt: Instant? = null
         protected set
 
+    var shippedAt: Instant? = null
+        protected set
+
     var closedAt: Instant? = null
         protected set
 
@@ -101,6 +104,15 @@ class Order(
 
             else -> throw BusinessException(ErrorCode.ORDER_NOT_CANCELABLE)
         }
+    }
+
+    // 배송 처리 저장. PAID 에서만
+    fun markShipped(now: Instant) {
+        if (status != OrderStatus.PAID) {
+            throw BusinessException(ErrorCode.ORDER_NOT_SHIPPABLE)
+        }
+        status = OrderStatus.SHIPPED
+        shippedAt = now
     }
 
     /** 만료 저장. PENDING 에서만 */

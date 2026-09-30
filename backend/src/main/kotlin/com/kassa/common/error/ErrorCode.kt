@@ -42,6 +42,7 @@ enum class ErrorCode(
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_002", "주문을 찾을 수 없습니다"),
     ORDER_NOT_CANCELABLE(HttpStatus.CONFLICT, "ORDER_003", "취소할 수 없는 주문입니다"),
     EMPTY_ORDER(HttpStatus.BAD_REQUEST, "ORDER_004", "주문할 상품이 없습니다"),
+    ORDER_NOT_SHIPPABLE(HttpStatus.CONFLICT, "ORDER_005", "배송 처리할 수 없는 주문입니다"),
 
     // 결제 에러
     PAYMENT_AMOUNT_MISMATCH(HttpStatus.CONFLICT, "PAY_001", "결제 금액이 맞지 않습니다"),

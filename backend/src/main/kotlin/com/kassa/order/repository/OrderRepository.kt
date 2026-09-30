@@ -24,6 +24,13 @@ interface OrderRepository : JpaRepository<Order, Long> {
 
     fun existsByOrderNo(orderNo: String): Boolean
 
+    // 관리자 목록. 회원을 가리지 않는다
+    @EntityGraph(attributePaths = ["items"])
+    fun findAllByOrderByIdDesc(): List<Order>
+
+    @EntityGraph(attributePaths = ["items"])
+    fun findAllByStatusOrderByIdDesc(status: OrderStatus): List<Order>
+
     // 복구 스케줄러는 회원을 모른 채 주문번호로만 찾는다
     @EntityGraph(attributePaths = ["items"])
     fun findByOrderNo(orderNo: String): Order?
