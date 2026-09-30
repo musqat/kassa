@@ -90,6 +90,11 @@ class User(
         return emailVerifiedAt != null
     }
 
+    /** 관리자로 올린다 */
+    fun promote() {
+        role = Role.ADMIN
+    }
+
     fun verifyEmail(now: Instant) {
         if (emailVerifiedAt == null) {
             emailVerifiedAt = now
