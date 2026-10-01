@@ -191,6 +191,21 @@ class CartControllerTest : IntegrationTest() {
     }
 
     @Test
+    fun `담은 뒤 판매가 끝나면 결제에서 빠지고 상태를 같이 준다`() {
+        addItem(water.id!!, quantity = 2)
+
+        val product = productRepository.findById(water.id!!).get()
+        product.changeStatus(ProductStatus.DELETED)
+        productRepository.save(product)
+
+        // 화면이 품절과 판매 종료를 다른 문구로 보여줄 수 있게 상태를 같이 준다
+        getCart().andExpect {
+            jsonPath("$.items[0].orderable") { value(false) }
+            jsonPath("$.items[0].status") { value("DELETED") }
+        }
+    }
+
+    @Test
     fun `품절 상품은 409 CART_003`() {
         addItem(soldOut.id!!).andExpect {
             status { isConflict() }

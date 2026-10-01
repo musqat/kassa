@@ -88,6 +88,42 @@ class ProductControllerTest : IntegrationTest() {
     }
 
     @Test
+    fun `판매 중이어도 남은 수량이 없으면 품절이다`() {
+        // 생수는 재고 0 으로 만들었다. 상태는 관리자가 손으로 바꿔서 판매 중 그대로다
+        mockMvc.get("/api/products/${water.id}").andExpect {
+            jsonPath("$.status") { value("ON_SALE") }
+            jsonPath("$.soldOut") { value(true) }
+        }
+    }
+
+    @Test
+    fun `남은 수량이 있으면 품절이 아니다`() {
+        val juice = productRepository.save(Product(categoryA, "주스", 2500, stock = 5))
+
+        mockMvc.get("/api/products/${juice.id}").andExpect {
+            jsonPath("$.soldOut") { value(false) }
+        }
+    }
+
+    @Test
+    fun `선점된 만큼 빼고 남은 게 없으면 품절이다`() {
+        val juice = Product(categoryA, "주스", 2500, stock = 3)
+        juice.reserve(3)
+        productRepository.save(juice)
+
+        mockMvc.get("/api/products/${juice.id}").andExpect {
+            jsonPath("$.soldOut") { value(true) }
+        }
+    }
+
+    @Test
+    fun `품절 상태는 수량과 상관없이 품절이다`() {
+        mockMvc.get("/api/products/${chips.id}").andExpect {
+            jsonPath("$.soldOut") { value(true) }
+        }
+    }
+
+    @Test
     fun `없는 상품은 404와 CATALOG_001을 준다`() {
         mockMvc.get("/api/products/99999")
             .andExpect {

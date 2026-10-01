@@ -139,7 +139,11 @@ function CartRow({ item, onChange, onRemove }: RowProps) {
           {item.name}
         </Link>
         <span className="text-muted text-xs">{formatPrice(item.price)}</span>
-        {!item.orderable && <span className="text-subtle text-xs">품절되어 결제에서 빠집니다</span>}
+        {!item.orderable && (
+          <span className="text-subtle text-xs">
+            {item.status === "DELETED" ? "판매가 끝난 상품이라" : "품절되어"} 결제에서 빠집니다
+          </span>
+        )}
       </div>
 
       <div className="flex flex-col items-end gap-2">

@@ -12,6 +12,7 @@ export type Product = {
   price: number;
   status: ProductStatus;
   thumbnailUrl: string | null;
+  soldOut: boolean;
 };
 
 export type TokenResponse = {
@@ -36,6 +37,7 @@ export type CartItem = {
   quantity: number;
   lineAmount: number;
   orderable: boolean;
+  status: ProductStatus;
 };
 
 export type Cart = {

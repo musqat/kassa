@@ -30,6 +30,8 @@ data class CartItemResponse(
     val quantity: Int,
     val lineAmount: Long,
     val orderable: Boolean,
+    // 결제에서 빠지는 이유를 화면이 고르게 상태를 같이 준다
+    val status: ProductStatus,
 ) {
     companion object {
         fun from(item: CartItem): CartItemResponse {
@@ -43,6 +45,7 @@ data class CartItemResponse(
                 lineAmount = product.price * item.quantity,
                 quantity = item.quantity,
                 orderable = product.status == ProductStatus.ON_SALE,
+                status = product.status,
             )
         }
     }
