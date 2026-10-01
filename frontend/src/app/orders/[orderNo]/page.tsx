@@ -23,7 +23,7 @@ export default function OrderDetailPage() {
             router.replace("/login");
             return;
           }
-          setError(e instanceof ApiError ? e.message : "불러오지 못했습니다");
+          setError(e instanceof ApiError ? e.message : "불러오기에 실패했습니다");
         }),
     [orderNo, router],
   );
@@ -47,7 +47,7 @@ export default function OrderDetailPage() {
         router.replace("/login");
         return;
       }
-      setError(e instanceof ApiError ? e.message : "취소하지 못했습니다");
+      setError(e instanceof ApiError ? e.message : "취소에 실패했습니다");
     } finally {
       setPending(false);
     }

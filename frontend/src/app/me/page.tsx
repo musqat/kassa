@@ -62,7 +62,7 @@ function NameSection({ name, onChanged }: { name: string; onChanged: (name: stri
       onChanged(value.trim());
       setDone(true);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "바꾸지 못했습니다");
+      setError(e instanceof ApiError ? e.message : "변경에 실패했습니다");
     }
   }
 
@@ -96,7 +96,7 @@ function PasswordSection() {
       clearToken();
       router.replace("/login");
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "바꾸지 못했습니다");
+      setError(e instanceof ApiError ? e.message : "변경에 실패했습니다");
     }
   }
 
@@ -142,7 +142,7 @@ function WithdrawSection() {
       clearToken();
       router.replace("/");
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "탈퇴하지 못했습니다");
+      setError(e instanceof ApiError ? e.message : "탈퇴에 실패했습니다");
     }
   }
 
