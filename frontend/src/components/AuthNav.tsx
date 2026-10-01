@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSyncExternalStore } from "react";
-import { AUTH_EVENT, clearToken, getToken } from "@/lib/auth";
+import { AUTH_EVENT, clearToken, getToken, useRole } from "@/lib/auth";
 
 // 토큰이 바뀌면 다시 그린다. 다른 탭의 변화는 storage 이벤트로 온다
 function subscribe(onChange: () => void) {
@@ -17,6 +17,7 @@ function subscribe(onChange: () => void) {
 
 export function AuthNav() {
   const router = useRouter();
+  const role = useRole();
   // 서버에서 그릴 때는 로그아웃 상태
   const loggedIn = useSyncExternalStore(
     subscribe,
@@ -34,6 +35,11 @@ export function AuthNav() {
 
   return (
     <span className="flex gap-6">
+      {role === "ADMIN" && (
+        <Link href="/admin" className="text-muted">
+          관리자
+        </Link>
+      )}
       <Link href="/me" className="text-muted">
         내 정보
       </Link>

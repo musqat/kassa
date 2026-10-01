@@ -10,7 +10,7 @@ export function ProductCard({
   product: Product;
   priority?: boolean;
 }) {
-  const soldOut = product.status === "SOLD_OUT";
+  const soldOut = product.soldOut;
 
   return (
     <li>

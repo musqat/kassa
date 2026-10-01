@@ -27,7 +27,7 @@ export default function ConfirmPayment() {
     // 금액은 쿼리로 온 값을 쓰지 않는다. 서버가 주문 금액으로 다시 확인한다
     confirmPayment(orderNo, paymentKey)
       .then(() => router.replace(`/orders/${orderNo}`))
-      .catch((e) => setError(e instanceof ApiError ? e.message : "결제하지 못했습니다"));
+      .catch((e) => setError(e instanceof ApiError ? e.message : "결제에 실패했습니다"));
   }, [orderNo, paymentKey, router]);
 
   const message = orderNo === null || paymentKey === null ? "결제 정보가 없습니다" : error;

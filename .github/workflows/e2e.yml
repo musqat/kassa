@@ -51,7 +51,12 @@ jobs:
         working-directory: backend
 
       # 로컬 프로파일로 띄운다. 가짜 게이트웨이 스위치가 있어야 실패 경로를 만든다
+      # 관리자 E2E 가 이 계정으로 로그인한다
       - name: Start backend
+        env:
+          ADMIN_LOGIN_ID: admin01
+          ADMIN_EMAIL: admin@kassa.local
+          ADMIN_PASSWORD: abcd1234
         run: |
           nohup java -jar build/libs/*.jar > backend.log 2>&1 &
           for i in $(seq 1 60); do

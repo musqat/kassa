@@ -22,7 +22,7 @@ export default function SignupPage() {
       const result = await checkLoginId(loginId);
       setIdCheck(result.available ? "쓸 수 있는 아이디입니다" : "이미 쓰는 아이디입니다");
     } catch (e) {
-      setIdCheck(e instanceof ApiError ? e.message : "확인하지 못했습니다");
+      setIdCheck(e instanceof ApiError ? e.message : "확인에 실패했습니다");
     }
   }
 

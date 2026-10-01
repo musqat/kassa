@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 export default function FailMessage() {
   const params = useSearchParams();
   const orderNo = params.get("orderId");
-  const message = params.get("message") ?? "결제를 끝내지 못했습니다";
+  const message = params.get("message") ?? "결제에 실패했습니다";
 
   return (
     <div className="flex flex-col items-start gap-3">

@@ -2,7 +2,7 @@ import { clearToken, getToken } from "@/lib/auth";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
 
-export type ProductStatus = "ON_SALE" | "SOLD_OUT" | "HIDDEN";
+export type ProductStatus = "ON_SALE" | "SOLD_OUT" | "HIDDEN" | "DELETED";
 
 // 백엔드 ProductResponse 와 같은 모양
 export type Product = {
@@ -12,6 +12,7 @@ export type Product = {
   price: number;
   status: ProductStatus;
   thumbnailUrl: string | null;
+  soldOut: boolean;
 };
 
 export type TokenResponse = {
@@ -36,6 +37,7 @@ export type CartItem = {
   quantity: number;
   lineAmount: number;
   orderable: boolean;
+  status: ProductStatus;
 };
 
 export type Cart = {
@@ -301,4 +303,101 @@ export function setFakeAmount(amount: number): Promise<void> {
 
 export function resetFakeGateway(): Promise<void> {
   return request<void>("/api/admin/fake-gateway/reset", { method: "POST" });
+}
+
+// 관리자 API. 서버가 ADMIN 권한을 확인한다
+
+export type AdminProduct = {
+  id: number;
+  categoryId: number;
+  categoryName: string;
+  name: string;
+  price: number;
+  status: ProductStatus;
+  thumbnailUrl: string | null;
+  stock: number;
+  reservedStock: number;
+};
+
+export type Category = {
+  id: number;
+  name: string;
+};
+
+export type ProductInput = {
+  categoryId: number;
+  name: string;
+  price: number;
+  thumbnailUrl: string | null;
+};
+
+export type AdminOrder = {
+  orderNo: string;
+  status: OrderStatus;
+  loginId: string | null;
+  receiver: string;
+  totalAmount: number;
+  createdAt: string;
+  paidAt: string | null;
+  shippedAt: string | null;
+  closedAt: string | null;
+};
+
+export type AdminOrderDetail = {
+  order: AdminOrder;
+  items: OrderItem[];
+  // 배송에 쓰라고 가리지 않은 값이 온다
+  phone: string;
+  zipcode: string;
+  addr1: string;
+  addr2: string | null;
+  method: string | null;
+};
+
+export function getAdminProducts(): Promise<AdminProduct[]> {
+  return request<AdminProduct[]>("/api/admin/products", { auth: true });
+}
+
+export function getCategories(): Promise<Category[]> {
+  return request<Category[]>("/api/admin/categories", { auth: true });
+}
+
+export function createProduct(input: ProductInput & { stock: number }): Promise<AdminProduct> {
+  return request("/api/admin/products", { method: "POST", body: input, auth: true });
+}
+
+export function editProduct(id: number, input: ProductInput): Promise<AdminProduct> {
+  return request(`/api/admin/products/${id}`, { method: "PATCH", body: input, auth: true });
+}
+
+export function changeStock(id: number, stock: number): Promise<AdminProduct> {
+  return request(`/api/admin/products/${id}/stock`, {
+    method: "PATCH",
+    body: { stock },
+    auth: true,
+  });
+}
+
+export function changeProductStatus(id: number, status: ProductStatus): Promise<AdminProduct> {
+  return request(`/api/admin/products/${id}/status`, {
+    method: "PATCH",
+    body: { status },
+    auth: true,
+  });
+}
+
+export function deleteProduct(id: number): Promise<void> {
+  return request<void>(`/api/admin/products/${id}`, { method: "DELETE", auth: true });
+}
+
+export function getAdminOrders(): Promise<AdminOrder[]> {
+  return request<AdminOrder[]>("/api/admin/orders", { auth: true });
+}
+
+export function getAdminOrder(orderNo: string): Promise<AdminOrderDetail> {
+  return request<AdminOrderDetail>(`/api/admin/orders/${orderNo}`, { auth: true });
+}
+
+export function shipOrder(orderNo: string): Promise<AdminOrder> {
+  return request(`/api/admin/orders/${orderNo}/ship`, { method: "PATCH", auth: true });
 }

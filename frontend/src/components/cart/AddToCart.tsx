@@ -29,7 +29,7 @@ export function AddToCart({ productId, soldOut }: { productId: number; soldOut: 
         router.push("/login");
         return;
       }
-      setError(e instanceof ApiError ? e.message : "담지 못했습니다");
+      setError(e instanceof ApiError ? e.message : "담기에 실패했습니다");
     }
   }
 

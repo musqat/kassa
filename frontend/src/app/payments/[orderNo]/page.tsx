@@ -55,7 +55,7 @@ export default function PaymentPage() {
             router.replace("/login");
             return;
           }
-          setError(e instanceof ApiError ? e.message : "불러오지 못했습니다");
+          setError(e instanceof ApiError ? e.message : "불러오기에 실패했습니다");
         }),
     [orderNo, router],
   );
@@ -78,7 +78,7 @@ export default function PaymentPage() {
       await confirmPayment(orderNo);
       router.push(`/orders/${orderNo}`);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "결제하지 못했습니다");
+      setError(e instanceof ApiError ? e.message : "결제에 실패했습니다");
     } finally {
       setPending(false);
     }
@@ -99,7 +99,7 @@ export default function PaymentPage() {
       });
     } catch (e) {
       // 결제창을 닫아도 여기로 온다
-      setError(e instanceof Error ? e.message : "결제창을 열지 못했습니다");
+      setError(e instanceof Error ? e.message : "결제창 열기에 실패했습니다");
       setPending(false);
     }
   }

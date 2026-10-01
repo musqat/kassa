@@ -23,7 +23,7 @@ function VerifyEmail() {
       .then(() => setState("done"))
       .catch((e) => {
         setState("failed");
-        setError(e instanceof ApiError ? e.message : "인증하지 못했습니다");
+        setError(e instanceof ApiError ? e.message : "인증에 실패했습니다");
       });
   }, [token]);
 

@@ -16,7 +16,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[id]"
     throw e;
   });
 
-  const soldOut = product.status !== "ON_SALE";
+  const soldOut = product.soldOut;
 
   return (
     <main className="mx-auto flex w-full max-w-[900px] flex-col gap-10 px-5 py-10 lg:px-12">
