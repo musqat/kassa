@@ -39,7 +39,9 @@ class InboxProcessor(
     // 본문에서 주문번호만 꺼내고 결제 상태는 대행사에 다시 묻는다. 승인 전이면 RECEIVED 로 둔다
     // 주문 상태는 직접 바꾸지 않고 사가를 부른다. 승인과 같은 길을 지나야 재고·장바구니가 맞는다
     private fun processOne(inbox: WebhookInbox) {
-        val orderNo = orderNoOf(inbox.payload)
+        // 본문의 paymentId 가 주문번호다. 없거나 깨졌으면 null
+        val orderNo = runCatching { objectMapper.readTree(inbox.payload).get("paymentId")?.asString() }
+            .getOrNull()
         if (orderNo == null){
             recorder.giveUp(inbox, "주문번호 없음")
             return
@@ -66,10 +68,6 @@ class InboxProcessor(
         }
 
     }
-
-    // 본문의 paymentId 가 주문번호다. 없거나 깨졌으면 null
-    private fun orderNoOf(payload: String): String? =
-        runCatching { objectMapper.readTree(payload).get("paymentId")?.asString() }.getOrNull()
 
     companion object {
         const val BATCH = 20

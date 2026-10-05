@@ -24,9 +24,7 @@ class WebhookController(private val receiver: WebhookReceiver) {
         request: HttpServletRequest,
     ) {
         // 서명은 원문 그대로 계산한다. 객체로 받으면 직렬화가 달라져 검증이 깨진다
-        receiver.receive(headersOf(request), rawBody)
+        val headers = request.headerNames.toList().associateWith { request.getHeader(it) }
+        receiver.receive(headers, rawBody)
     }
-
-    private fun headersOf(request: HttpServletRequest): Map<String, String> =
-        request.headerNames.toList().associateWith { request.getHeader(it) }
 }

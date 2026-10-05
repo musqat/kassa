@@ -140,7 +140,8 @@ class OrderService(
 
     @Transactional(readOnly = true)
     fun findMyOrders(userId: Long): List<OrderResponse> {
-        return orderRepository.findAllByUserIdOrderByIdDesc(userId).map { toResponse(it) }
+        return orderRepository.findAllByUserIdOrderByIdDesc(userId)
+            .map { OrderResponse.of(it, maskPhone(phoneCipher.decrypt(it.phoneEnc))) }
     }
 
     @Transactional(readOnly = true)
@@ -154,11 +155,8 @@ class OrderService(
             .firstOrNull { it.method != null }
             ?.method
 
-        return toResponse(order, method)
+        return OrderResponse.of(order, maskPhone(phoneCipher.decrypt(order.phoneEnc)), method)
     }
-
-    private fun toResponse(order: Order, method: String? = null): OrderResponse =
-        OrderResponse.of(order, maskPhone(phoneCipher.decrypt(order.phoneEnc)), method)
 
     // 드물지만 겹칠 수 있다. 한 번 더 만들어 보고 그래도 겹치면 예외
     private fun nextOrderNo(now: Instant): String {
