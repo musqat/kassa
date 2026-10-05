@@ -15,7 +15,7 @@ class ProductService(
     private val productRepository: ProductRepository,
 ) {
 
-    /** 노출 대상 목록. categoryId 가 있으면 그 카테고리만. */
+    /** 보이는 상품 목록. categoryId 가 있으면 그 카테고리만 */
     fun findAll(categoryId: Long?): List<ProductResponse> {
         val products = if (categoryId == null) {
             productRepository.findByStatusIn(ProductStatus.VISIBLE)
@@ -26,7 +26,6 @@ class ProductService(
         return products.map(ProductResponse::from)
     }
 
-    /** 단건 조회 */
     fun findOne(id: Long): ProductResponse {
         val product = productRepository.findByIdOrNull(id) ?: throw BusinessException(ErrorCode.PRODUCT_NOT_FOUND)
 

@@ -7,7 +7,6 @@ import com.kassa.common.error.BusinessException
 import com.kassa.common.error.ErrorCode
 import com.kassa.order.domain.OrderStatus
 import com.kassa.order.repository.OrderRepository
-import com.kassa.payment.domain.PaymentStatus
 import com.kassa.payment.repository.PaymentRepository
 import com.kassa.user.repository.UserRepository
 import java.time.Clock

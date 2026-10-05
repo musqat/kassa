@@ -1,7 +1,6 @@
 package com.kassa.payment.service
 
 import com.kassa.payment.domain.Payment
-import com.kassa.payment.domain.PaymentStatus
 import com.kassa.payment.gateway.GatewayStatus
 import com.kassa.payment.gateway.PaymentGateway
 import com.kassa.payment.repository.PaymentRepository

@@ -1,6 +1,5 @@
 package com.kassa.payment.gateway
 
-import com.kassa.common.error.ErrorCode
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId

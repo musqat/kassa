@@ -37,7 +37,7 @@ class TossConfig {
     fun tossTransactionsRestClient(builder: RestClient.Builder, properties: TossProperties): RestClient =
         client(builder, properties, properties.transactionsTimeout)
 
-    // 주입받은 빌더를 쓴다. 직접 만들면 모르는 필드에서 터지는 기본 변환기가 붙는다
+    // 주입받은 빌더를 쓴다. 직접 만들면 모르는 필드에서 실패하는 기본 변환기가 붙는다
     private fun client(
         builder: RestClient.Builder,
         properties: TossProperties,

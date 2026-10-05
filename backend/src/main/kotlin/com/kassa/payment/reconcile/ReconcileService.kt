@@ -83,7 +83,7 @@ class ReconcileService(
             return false
         }
 
-        // 돈만 받고 주문이 없는 상태다. 사람이 바로 봐야 한다
+        // 돈만 받고 주문이 없는 상태다. 사람이 바로 볼 자리다
         if (kind == DiffKind.MISSING_LOCAL) {
             log.error("대행사에만 있는 결제: {} {}", targetDate, orderNo)
         }
