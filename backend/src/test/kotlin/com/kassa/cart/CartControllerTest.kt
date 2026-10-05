@@ -206,6 +206,30 @@ class CartControllerTest : IntegrationTest() {
     }
 
     @Test
+    fun `남은 수량보다 많이 담으면 모자란다고 알린다`() {
+        // 생수는 재고 0 으로 만들었다. 판매 중이라 담기는 되지만 이대로는 주문이 막힌다
+        addItem(water.id!!, quantity = 2)
+
+        getCart().andExpect {
+            jsonPath("$.items[0].orderable") { value(true) }
+            jsonPath("$.items[0].stockShort") { value(true) }
+        }
+    }
+
+    @Test
+    fun `남은 수량이 넉넉하면 모자라지 않다`() {
+        val product = productRepository.findById(water.id!!).get()
+        product.changeStock(10)
+        productRepository.save(product)
+
+        addItem(water.id!!, quantity = 2)
+
+        getCart().andExpect {
+            jsonPath("$.items[0].stockShort") { value(false) }
+        }
+    }
+
+    @Test
     fun `품절 상품은 409 CART_003`() {
         addItem(soldOut.id!!).andExpect {
             status { isConflict() }

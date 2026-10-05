@@ -38,6 +38,7 @@ export type CartItem = {
   lineAmount: number;
   orderable: boolean;
   status: ProductStatus;
+  stockShort: boolean;
 };
 
 export type Cart = {

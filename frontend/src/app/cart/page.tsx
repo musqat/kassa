@@ -104,9 +104,19 @@ export default function CartPage() {
             </div>
           </section>
 
+          {cart.items.some((item) => item.stockShort) && (
+            <p className="text-danger text-xs">
+              남은 수량보다 많이 담은 상품이 있어 주문할 수 없습니다
+            </p>
+          )}
+
           <Link
             href="/checkout"
-            aria-disabled={!cart.items.some((item) => item.orderable)}
+            // 수량이 모자란 줄이 있으면 주문 전체가 막힌다. 먼저 줄이게 한다
+            aria-disabled={
+              !cart.items.some((item) => item.orderable) ||
+              cart.items.some((item) => item.stockShort)
+            }
             className="bg-ink flex h-12 items-center justify-center rounded-[var(--radius-field)] text-sm text-white aria-disabled:pointer-events-none aria-disabled:opacity-40"
           >
             주문하기
@@ -143,6 +153,9 @@ function CartRow({ item, onChange, onRemove }: RowProps) {
           <span className="text-subtle text-xs">
             {item.status === "DELETED" ? "판매가 끝난 상품이라" : "품절되어"} 결제에서 빠집니다
           </span>
+        )}
+        {item.stockShort && (
+          <span className="text-danger text-xs">남은 수량이 모자랍니다. 수량을 줄여 주세요</span>
         )}
       </div>
 
