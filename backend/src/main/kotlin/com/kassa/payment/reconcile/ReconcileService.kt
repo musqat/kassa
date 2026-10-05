@@ -34,8 +34,11 @@ class ReconcileService(
         val to = targetDate.plusDays(1).atStartOfDay(KST).toInstant()
 
         val gatewayPayments = gateway.findPayments(from, to).associateBy { it.orderNo }
-        val localPaid = paidOf(from, to)
-            .mapNotNull { payment -> orderNoOf(payment)?.let { it to payment } }
+        // 그날 승인된 내 결제를 주문번호로 묶는다. 주문이 없는 결제는 뺀다
+        val localPaid = paymentRepository.findAllByStatusAndApprovedAtBetween(PaymentStatus.PAID, from, to)
+            .mapNotNull { payment ->
+                orderRepository.findById(payment.orderId).orElse(null)?.let { it.orderNo to payment }
+            }
             .toMap()
 
         var found = 0
@@ -66,15 +69,6 @@ class ReconcileService(
 
     private fun describe(payment: Payment) =
         "amount=${payment.amount}, status=${payment.status}, tx=${payment.transactionId}"
-
-    // 그날 승인된 내 결제
-    @Transactional(readOnly = true)
-    fun paidOf(from: java.time.Instant, to: java.time.Instant): List<Payment> =
-        paymentRepository.findAllByStatusAndApprovedAtBetween(PaymentStatus.PAID, from, to)
-
-    // 결제에 딸린 주문번호. 주문이 없으면 null
-    private fun orderNoOf(payment: Payment): String? =
-        orderRepository.findById(payment.orderId).orElse(null)?.orderNo
 
     // 같은 날짜·주문번호·종류가 이미 있으면 넣지 않는다. 리턴은 새로 넣었는지
     @Transactional

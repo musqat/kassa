@@ -50,15 +50,14 @@ class TossConfig {
         val factory = JdkClientHttpRequestFactory(httpClient)
         factory.setReadTimeout(readTimeout)
 
+        // 시크릿 키가 사용자 이름이고 비밀번호는 없다. 콜론을 빼면 인증이 실패한다
+        val credentials = Base64.getEncoder().encodeToString("${properties.secretKey}:".toByteArray())
+
         return builder.clone()
             .baseUrl(properties.baseUrl)
             .requestFactory(factory)
-            .defaultHeader(HttpHeaders.AUTHORIZATION, basicAuth(properties.secretKey))
+            .defaultHeader(HttpHeaders.AUTHORIZATION, "Basic $credentials")
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .build()
     }
-
-    // 시크릿 키가 사용자 이름이고 비밀번호는 없다. 콜론을 빼면 인증이 실패한다
-    private fun basicAuth(secretKey: String): String =
-        "Basic " + Base64.getEncoder().encodeToString("$secretKey:".toByteArray())
 }

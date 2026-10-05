@@ -96,10 +96,15 @@ class TossPaymentGateway(
         }.getOrNull()
 
     // 한 결제가 승인·취소마다 한 줄씩 생긴다. 주문번호로 묶어 마지막 거래만 남긴다
-    override fun findPayments(from: Instant, to: Instant): List<GatewayPayment> =
-        transactions(dateParam(from), dateParam(to))
+    override fun findPayments(from: Instant, to: Instant): List<GatewayPayment> {
+        // 거래 조회는 오프셋 없는 서울 시각 문자열을 받는다
+        val startDate = LocalDateTime.ofInstant(from, SEOUL).withNano(0).toString()
+        val endDate = LocalDateTime.ofInstant(to, SEOUL).withNano(0).toString()
+
+        return transactions(startDate, endDate)
             .groupBy { it.orderId }
             .map { (_, rows) -> rows.maxBy { it.transactionAt }.toGatewayPayment() }
+    }
 
     /** 토스 상태를 우리 상태로 옮긴다 */
     private fun statusOf(tossStatus: String): GatewayStatus {
@@ -162,10 +167,6 @@ class TossPaymentGateway(
             .body(Array<TossTransaction>::class.java)!!
             .toList()
     }
-
-    /** 거래 조회가 받는 날짜 문자열. 오프셋 없이 서울 시각으로 보낸다 */
-    private fun dateParam(at: Instant): String =
-        LocalDateTime.ofInstant(at, SEOUL).withNano(0).toString()
 
     /**
      * 실패를 셋으로 나눈다. 응답이 없으면 GatewayTimeoutException,
