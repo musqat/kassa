@@ -35,10 +35,12 @@ class ReconcileService(
 
         val gatewayPayments = gateway.findPayments(from, to).associateBy { it.orderNo }
         // 그날 승인된 내 결제를 주문번호로 묶는다. 주문이 없는 결제는 뺀다
-        val localPaid = paymentRepository.findAllByStatusAndApprovedAtBetween(PaymentStatus.PAID, from, to)
-            .mapNotNull { payment ->
-                orderRepository.findById(payment.orderId).orElse(null)?.let { it.orderNo to payment }
-            }
+        // 결제마다 주문을 읽으면 결제 수만큼 조회가 나간다. 한 번에 읽어 맞춘다
+        val payments = paymentRepository.findAllByStatusAndApprovedAtBetween(PaymentStatus.PAID, from, to)
+        val orderNos = orderRepository.findAllById(payments.map { it.orderId })
+            .associate { it.id!! to it.orderNo }
+        val localPaid = payments
+            .mapNotNull { payment -> orderNos[payment.orderId]?.let { it to payment } }
             .toMap()
 
         var found = 0
