@@ -72,7 +72,10 @@ jobs:
         run: npm ci
         working-directory: frontend
 
+      # 결과 고르기 버튼은 빌드에 박힌다. E2E 가 거절 경로를 그 버튼으로 만든다
       - name: Build frontend
+        env:
+          NEXT_PUBLIC_FAKE_GATEWAY: "true"
         run: npm run build
         working-directory: frontend
 

@@ -16,7 +16,11 @@ import {
 import { formatPrice } from "@/lib/format";
 import { openPaymentWindow } from "@/lib/toss";
 
-// 토스 결제창과 가짜 게이트웨이 버튼을 같이 둔다
+// 가짜 게이트웨이가 있는 곳에서만 결과 고르기 버튼을 그린다
+// 배포 백엔드는 토스라 이 버튼들이 부르는 창구가 없다. 개발 서버는 늘 켜고, 빌드는 변수로 켠다
+const FAKE_GATEWAY =
+  process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_FAKE_GATEWAY === "true";
+
 // 토스 테스트 모드로는 응답 없음을 만들 수 없어 실패 경로는 버튼으로 본다
 type Choice = {
   label: string;
@@ -147,27 +151,29 @@ export default function PaymentPage() {
         토스로 결제하기
       </button>
 
-      <section className="border-line flex flex-col gap-3 rounded-[var(--radius-card)] border bg-white px-6 py-6 shadow-[var(--shadow-card)]">
-        <h2 className="text-sm font-bold">결과 고르기</h2>
-        <p className="text-subtle text-xs">
-          토스 테스트 결제로는 만들 수 없는 실패를 여기서 고릅니다.
-        </p>
+      {FAKE_GATEWAY && (
+        <section className="border-line flex flex-col gap-3 rounded-[var(--radius-card)] border bg-white px-6 py-6 shadow-[var(--shadow-card)]">
+          <h2 className="text-sm font-bold">결과 고르기</h2>
+          <p className="text-subtle text-xs">
+            토스 테스트 결제로는 만들 수 없는 실패를 여기서 고릅니다.
+          </p>
 
-        <div className="mt-2 flex flex-col gap-2">
-          {CHOICES.map((choice) => (
-            <button
-              key={choice.label}
-              type="button"
-              onClick={() => pay(choice)}
-              disabled={pending}
-              className="border-line flex flex-col items-start gap-1 rounded-[var(--radius-field)] border bg-white px-4 py-3 text-left disabled:opacity-40"
-            >
-              <span className="text-sm">{choice.label}</span>
-              <span className="text-subtle text-xs">{choice.hint}</span>
-            </button>
-          ))}
-        </div>
-      </section>
+          <div className="mt-2 flex flex-col gap-2">
+            {CHOICES.map((choice) => (
+              <button
+                key={choice.label}
+                type="button"
+                onClick={() => pay(choice)}
+                disabled={pending}
+                className="border-line flex flex-col items-start gap-1 rounded-[var(--radius-field)] border bg-white px-4 py-3 text-left disabled:opacity-40"
+              >
+                <span className="text-sm">{choice.label}</span>
+                <span className="text-subtle text-xs">{choice.hint}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       {error && <p className="text-danger text-xs">{error}</p>}
 
