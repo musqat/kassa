@@ -32,6 +32,8 @@ data class CartItemResponse(
     val orderable: Boolean,
     // 결제에서 빠지는 이유를 화면이 고르게 상태를 같이 준다
     val status: ProductStatus,
+    // 판매 중인데 담은 수량이 남은 수량보다 많다. 이대로 주문하면 주문 전체가 409 로 막힌다
+    val stockShort: Boolean,
 ) {
     companion object {
         fun from(item: CartItem): CartItemResponse {
@@ -46,6 +48,7 @@ data class CartItemResponse(
                 quantity = item.quantity,
                 orderable = product.status == ProductStatus.ON_SALE,
                 status = product.status,
+                stockShort = product.status == ProductStatus.ON_SALE && product.availableStock() < item.quantity,
             )
         }
     }
