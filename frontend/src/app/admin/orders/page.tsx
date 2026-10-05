@@ -124,7 +124,7 @@ export default function AdminOrdersPage() {
                   {opened.addr2 && ` ${opened.addr2}`}
                 </p>
                 <p>
-                  결제 {opened.method ?? "-"}
+                  결제 {opened.method === "CARD" ? "카드" : (opened.method ?? "-")}
                   {opened.order.paidAt && ` · ${formatDateTime(opened.order.paidAt)}`}
                   {opened.order.shippedAt && ` · 배송 ${formatDateTime(opened.order.shippedAt)}`}
                 </p>

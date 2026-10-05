@@ -8,7 +8,7 @@ import { Field, SubmitButton } from "@/components/form/Field";
 type Props = {
   title: string;
   hint: string;
-  // 가입 여부를 알려주지 않으려고 결과를 하나로 둔다
+  // 가입 여부가 드러나지 않게 결과를 하나로 둔다
   doneMessage: string;
   submitLabel: string;
   action: (email: string) => Promise<void>;

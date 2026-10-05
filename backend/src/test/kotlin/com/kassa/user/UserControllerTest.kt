@@ -152,7 +152,7 @@ class UserControllerTest : IntegrationTest() {
     }
 
     @Test
-    fun `아이디 중복확인`() {
+    fun `쓰는 아이디는 못 쓰고 안 쓰는 아이디는 쓸 수 있다고 나온다`() {
         signUpAndVerify()
 
         availability("hong01").andExpect {

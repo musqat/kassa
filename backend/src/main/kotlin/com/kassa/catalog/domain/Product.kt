@@ -22,7 +22,7 @@ enum class ProductStatus {
     ;
 
     companion object {
-        /** 목록과 단건 조회에 노출되는 상태. HIDDEN 은 빠진다. */
+        /** 목록과 단건 조회에 보이는 상태. 숨김과 판매 종료는 빠진다 */
         val VISIBLE = listOf(ON_SALE, SOLD_OUT)
     }
 }

@@ -17,14 +17,12 @@ class ProductController(
     private val productService: ProductService,
 ) {
 
-    /** GET /api/products?categoryId=1 */
     @Operation(summary = "상품 목록", description = "categoryId 를 주면 그 분류만, 숨김 상품은 빼고 준다")
     @GetMapping
     fun findAll(
         @RequestParam(required = false) categoryId: Long?,
     ): List<ProductResponse> = productService.findAll(categoryId)
 
-    /** GET /api/products/1 */
     @Operation(summary = "상품 단건")
     @GetMapping("/{id}")
     fun findOne(
