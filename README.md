@@ -13,6 +13,28 @@
 
 <br>
 
+## 화면
+
+<details>
+<summary><b>회원 — 상품을 담아 주문하고 결제한다</b></summary>
+
+<br>
+
+<img src=".github/screenshots/shop.gif" width="720" alt="상품 목록, 상세, 장바구니, 주문서, 결제, 주문 상세">
+
+</details>
+
+<details>
+<summary><b>관리자 — 상품을 등록·판매 종료하고 주문을 배송 처리한다</b></summary>
+
+<br>
+
+<img src=".github/screenshots/admin.gif" width="720" alt="관리자 상품 목록, 상품 등록, 판매 종료, 주문 펼치기, 배송 처리">
+
+</details>
+
+<br>
+
 ## 결제가 어긋나지 않게
 
 돈이 오가는 구간은 실패하는 방식이 여러 가지다. 대행사가 거절할 수도 있고, 응답이 아예 안 올 수도 있고,
