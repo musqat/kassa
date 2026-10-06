@@ -37,14 +37,14 @@ export async function signUpAndVerify(page: Page, account: Account) {
     throw new Error(`가입 실패 ${created.status} ${await created.text()}`);
   }
 
-  await page.goto(await verifyLink(account.email));
+  await page.goto(await mailLink(account.email, "verify-email"));
 
   // 인증은 화면이 뜬 뒤에 요청으로 끝난다. 먼저 로그인하면 아직 인증 전이라 막힌다
   await page.getByText("이메일 인증이 끝났습니다").waitFor();
 }
 
-/** Mailpit에서 그 주소로 온 마지막 메일을 찾아 인증 링크를 꺼낸다 */
-async function verifyLink(email: string): Promise<string> {
+/** Mailpit 에서 그 주소로 온 마지막 메일을 찾아 path 가 든 링크를 꺼낸다 */
+export async function mailLink(email: string, path: string): Promise<string> {
   // 메일은 가입 직후 비동기로 들어온다. 몇 번 다시 본다
   for (let attempt = 0; attempt < 20; attempt += 1) {
     const found = await fetch(
@@ -57,7 +57,7 @@ async function verifyLink(email: string): Promise<string> {
         res.json(),
       );
       const body: string = message.HTML || message.Text;
-      const link = body.match(/https?:\/\/[^"'\s<>]*verify-email[^"'\s<>]*/)?.[0];
+      const link = body.match(new RegExp(`https?://[^"'\\s<>]*${path}[^"'\\s<>]*`))?.[0];
 
       if (link) return link;
     }
@@ -65,7 +65,7 @@ async function verifyLink(email: string): Promise<string> {
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
-  throw new Error(`${email} 로 온 인증 메일을 찾지 못했습니다`);
+  throw new Error(`${email} 로 온 ${path} 메일을 찾지 못했습니다`);
 }
 
 export async function logIn(page: Page, account: Account) {

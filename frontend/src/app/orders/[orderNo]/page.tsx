@@ -66,7 +66,8 @@ export default function OrderDetailPage() {
       <header className="flex flex-col gap-1">
         <h1 className="text-lg font-bold tracking-[0.08em]">주문 상세</h1>
         <p className="text-muted text-xs">
-          {order.orderNo} · {formatDateTime(order.createdAt)} · {ORDER_STATUS_LABEL[order.status]}
+          {order.orderNo} · {formatDateTime(order.createdAt)} ·{" "}
+          {order.paymentInProgress ? "결제 확인 중" : ORDER_STATUS_LABEL[order.status]}
         </p>
       </header>
 
@@ -126,9 +127,24 @@ export default function OrderDetailPage() {
         </section>
       )}
 
+      {order.paymentInProgress && (
+        <p className="text-muted text-xs">
+          결제 결과를 대행사에 확인하고 있습니다. 확인이 끝나면 결제 완료나 결제 대기로 바뀝니다
+        </p>
+      )}
+
       {error && <p className="text-danger text-xs">{error}</p>}
 
-      {(order.status === "PENDING" || order.status === "PAID") && (
+      {order.status === "PENDING" && !order.paymentInProgress && (
+        <Link
+          href={`/payments/${order.orderNo}`}
+          className="bg-ink flex h-12 items-center justify-center rounded-[var(--radius-field)] text-sm text-white"
+        >
+          결제하기
+        </Link>
+      )}
+
+      {((order.status === "PENDING" && !order.paymentInProgress) || order.status === "PAID") && (
         <button
           type="button"
           onClick={handleCancel}

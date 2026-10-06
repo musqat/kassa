@@ -75,6 +75,8 @@ export type Order = {
   paidAt: string | null;
   // 결제 수단은 상세에서만 온다. 목록에서는 null
   method: string | null;
+  // 승인 결과를 모르는 중. 상세에서만 온다
+  paymentInProgress: boolean;
 };
 
 export type PlaceOrderResult = {
