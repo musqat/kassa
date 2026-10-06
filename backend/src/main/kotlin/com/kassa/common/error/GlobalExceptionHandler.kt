@@ -4,12 +4,14 @@ import com.kassa.common.trace.REQUEST_ID
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.http.ProblemDetail
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.mail.MailException
 import org.springframework.web.ErrorResponse
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.HandlerMethodValidationException
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import kotlin.text.ifEmpty
 
 const val CODE = "code"
@@ -49,6 +51,12 @@ class GlobalExceptionHandler {
         return problemOf(ErrorCode.INVALID_REQUEST, detail.ifEmpty { ErrorCode.INVALID_REQUEST.message })
     }
 
+    /** 본문이 JSON 이 아니거나 값의 타입·범위가 맞지 않는다. 받은 값은 응답에 싣지 않는다 */
+    @ExceptionHandler(HttpMessageNotReadableException::class, MethodArgumentTypeMismatchException::class)
+    fun handleUnreadable(e: Exception): ProblemDetail {
+        log.warn("읽을 수 없는 요청 {}", e.javaClass.simpleName)
+        return problemOf(ErrorCode.INVALID_REQUEST)
+    }
 
     /** 메일 서버 연결·인증 실패 */
     @ExceptionHandler(MailException::class)

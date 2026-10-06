@@ -11,6 +11,9 @@ spring:
       mail.smtp.starttls.enable: false
 
 app:
+  # E2E 가 같은 IP 로 계정을 여럿 만든다
+  signup-limit:
+    max: 100
   crypto:
     phone-key: a2Fzc2EtbG9jYWwtcGhvbmUta2V5LW5vdC1yZWFsISE=
   jwt:

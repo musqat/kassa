@@ -1,5 +1,7 @@
 package com.kassa.user.controller
 
+import com.kassa.common.error.BusinessException
+import com.kassa.common.error.ErrorCode
 import com.kassa.common.security.userId
 import com.kassa.user.dto.LOGIN_ID_MESSAGE
 import com.kassa.user.dto.LOGIN_ID_REGEX
@@ -9,7 +11,9 @@ import com.kassa.user.dto.ChangePasswordRequest
 import com.kassa.user.dto.SignupRequest
 import com.kassa.user.dto.WithdrawRequest
 import com.kassa.user.dto.UserResponse
+import com.kassa.user.service.SignupRateLimiter
 import com.kassa.user.service.UserService
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Pattern
 import io.swagger.v3.oas.annotations.Operation
@@ -33,12 +37,18 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/users")
 class UserController(
     private val userService: UserService,
+    private val signupRateLimiter: SignupRateLimiter,
 ) {
 
-    @Operation(summary = "회원가입", description = "인증 메일을 보낸다. 인증된 이메일·아이디면 409")
+    @Operation(summary = "회원가입", description = "인증 메일을 보낸다. 인증된 이메일·아이디면 409, 같은 IP 가 짧은 시간에 많이 가입하면 429")
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
-    fun signUp(@Valid @RequestBody request: SignupRequest) {
+    fun signUp(@Valid @RequestBody request: SignupRequest, httpRequest: HttpServletRequest) {
+        // Fly 프록시가 실제 클라이언트 IP 를 이 헤더에 넣는다. 로컬은 접속한 주소를 쓴다
+        val ip = httpRequest.getHeader("Fly-Client-IP") ?: httpRequest.remoteAddr
+        if (!signupRateLimiter.tryAcquire(ip)) {
+            throw BusinessException(ErrorCode.TOO_MANY_REQUESTS)
+        }
         userService.signUp(request)
     }
 

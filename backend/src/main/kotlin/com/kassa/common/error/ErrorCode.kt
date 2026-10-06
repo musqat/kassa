@@ -13,6 +13,7 @@ enum class ErrorCode(
 ) {
     // 공통 에러
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "COMMON_001", "요청이 올바르지 않습니다"),
+    TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "COMMON_002", "요청이 많습니다. 잠시 뒤 다시 시도하세요"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_999", "서버 오류가 발생했습니다"),
 
     // 카탈로그 에러
