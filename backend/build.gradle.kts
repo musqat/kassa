@@ -4,6 +4,7 @@ plugins {
 	id("org.springframework.boot") version "4.1.1"
 	id("io.spring.dependency-management") version "1.1.7"
 	kotlin("plugin.jpa") version "2.3.21"
+	jacoco
 }
 
 group = "com.kassa"
@@ -71,6 +72,23 @@ tasks.test {
 	useJUnitPlatform {
 		excludeTags("toss")
 	}
+	finalizedBy(tasks.jacocoTestReport)
+}
+
+jacoco {
+	toolVersion = "0.8.15"
+}
+
+// 테스트가 끝나면 커버리지 리포트를 남긴다. build/reports/jacoco/test/html
+tasks.jacocoTestReport {
+	reports {
+		xml.required = true
+		html.required = true
+	}
+	// 기동 진입점은 테스트 대상이 아니다
+	classDirectories.setFrom(
+		files(classDirectories.files.map { fileTree(it) { exclude("com/kassa/KassaApplication*") } }),
+	)
 }
 
 // 토스 연동만 돌린다. TOSS_SECRET_KEY 가 없으면 건너뛴다
