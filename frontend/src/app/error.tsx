@@ -12,7 +12,7 @@ export default function Error({
       <div className="flex flex-col gap-2">
         <p className="text-sm">화면을 불러오는 데 실패했습니다</p>
         <p className="text-muted text-xs">
-          서버가 켜지는 중일 수 있습니다. 잠시 뒤 다시 시도해 주세요
+          서버를 준비하는 중일 수 있습니다. 잠시 뒤 다시 시도해 주세요
         </p>
       </div>
       <button
