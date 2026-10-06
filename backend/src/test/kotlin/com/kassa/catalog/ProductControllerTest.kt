@@ -78,6 +78,15 @@ class ProductControllerTest : IntegrationTest() {
     }
 
     @Test
+    fun `상품 id 가 숫자가 아니면 400 COMMON_001`() {
+        mockMvc.get("/api/products/abc")
+            .andExpect {
+                status { isBadRequest() }
+                jsonPath("$.code") { value("COMMON_001") }
+            }
+    }
+
+    @Test
     fun `단건 조회는 이름과 가격을 준다`() {
         mockMvc.get("/api/products/${water.id}")
             .andExpect {

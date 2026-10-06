@@ -104,6 +104,13 @@ class CartControllerTest : IntegrationTest() {
             content = """{"productId":$productId,"quantity":$quantity}"""
         }
 
+    private fun postRaw(body: String): ResultActionsDsl =
+        mockMvc.post("/api/cart/items") {
+            header("Authorization", "Bearer $token")
+            contentType = MediaType.APPLICATION_JSON
+            content = body
+        }
+
     private fun changeQuantity(itemId: Long, quantity: Int, withToken: String = token): ResultActionsDsl =
         mockMvc.patch("/api/cart/items/$itemId") {
             header("Authorization", "Bearer $withToken")
@@ -185,6 +192,30 @@ class CartControllerTest : IntegrationTest() {
     @Test
     fun `한 번에 100 개를 담으면 400 COMMON_001`() {
         addItem(water.id!!, quantity = 100).andExpect {
+            status { isBadRequest() }
+            jsonPath("$.code") { value("COMMON_001") }
+        }
+    }
+
+    @Test
+    fun `본문이 JSON 이 아니면 400 COMMON_001`() {
+        postRaw("{bad json").andExpect {
+            status { isBadRequest() }
+            jsonPath("$.code") { value("COMMON_001") }
+        }
+    }
+
+    @Test
+    fun `필드 타입이 다르면 400 COMMON_001`() {
+        postRaw("""{"productId":"abc","quantity":1}""").andExpect {
+            status { isBadRequest() }
+            jsonPath("$.code") { value("COMMON_001") }
+        }
+    }
+
+    @Test
+    fun `수량이 int 범위를 넘으면 400 COMMON_001`() {
+        postRaw("""{"productId":${water.id},"quantity":1000000000000}""").andExpect {
             status { isBadRequest() }
             jsonPath("$.code") { value("COMMON_001") }
         }
