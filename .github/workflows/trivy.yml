@@ -1,0 +1,43 @@
+name: trivy
+
+# 의존성 CVE 를 리포트로만 남긴다.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # 코드가 그대로여도 새 CVE 가 나온다
+  schedule:
+    - cron: "0 0 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 배포하는 이미지 그대로 본다. jar 안의 의존성과 OS 패키지가 같이 잡힌다
+      - name: Build backend image
+        run: docker build -t kassa-api:scan backend
+
+      - name: Scan backend image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          version: v0.75.0
+          scan-type: image
+          image-ref: kassa-api:scan
+          severity: HIGH,CRITICAL
+          exit-code: "0"
+
+      - name: Scan frontend lockfile
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          version: v0.75.0
+          scan-type: fs
+          scan-ref: frontend
+          severity: HIGH,CRITICAL
+          exit-code: "0"
+          skip-setup-trivy: true

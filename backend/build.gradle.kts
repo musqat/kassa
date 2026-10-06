@@ -20,6 +20,11 @@ repositories {
 	mavenCentral()
 }
 
+// 부트 4.1.1 이 고르는 버전에 CVE 가 있어 패치 버전으로 올린다. 부트를 올릴 때 지운다
+extra["tomcat.version"] = "11.0.26"
+extra["jackson-bom.version"] = "3.1.7"
+extra["jackson-2-bom.version"] = "2.21.7"
+
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
