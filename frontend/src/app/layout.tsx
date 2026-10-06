@@ -18,7 +18,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className={`${notoSansKr.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
-        <header className="border-line flex h-[64px] items-center gap-6 border-b bg-white px-5 lg:h-[72px] lg:gap-12 lg:px-12">
+        <header className="border-line flex min-h-[64px] flex-wrap items-center gap-x-6 gap-y-2 border-b bg-white px-5 py-3 lg:h-[72px] lg:gap-x-12 lg:px-12 lg:py-0">
           <Link href="/" className="text-xl font-bold tracking-[0.12em]">
             KASSA
           </Link>
@@ -27,7 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               전체
             </Link>
           </nav>
-          <div className="ml-auto flex gap-4 text-sm lg:gap-6">
+          <div className="ml-auto flex gap-4 text-sm whitespace-nowrap lg:gap-6">
             <AuthNav />
             <Link href="/cart" className="text-muted">
               장바구니

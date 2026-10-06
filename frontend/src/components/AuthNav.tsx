@@ -34,12 +34,15 @@ export function AuthNav() {
   }
 
   return (
-    <span className="flex gap-6">
+    <span className="flex gap-4 lg:gap-6">
       {role === "ADMIN" && (
         <Link href="/admin" className="text-muted">
           관리자
         </Link>
       )}
+      <Link href="/orders" className="text-muted">
+        주문 내역
+      </Link>
       <Link href="/me" className="text-muted">
         내 정보
       </Link>
