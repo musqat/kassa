@@ -2,6 +2,7 @@ package com.kassa.saga.domain
 
 // 사가 전체의 상태
 // RUNNING ─ 다 끝남 ─▶ COMPLETED
+//         ├ 재시도 상한 ─▶ NEEDS_ATTENTION
 //         └ 실패 ─▶ COMPENSATING ─ 다 되돌림 ─▶ FAILED
 //                              └ 되돌리기 실패 ─▶ NEEDS_ATTENTION
 enum class SagaStatus {
@@ -17,7 +18,7 @@ enum class SagaStatus {
     /** 보상 완료 */
     FAILED,
 
-    /** 보상 거듭 실패. 사람이 본다 */
+    /** 보상 거듭 실패, 또는 재시도 상한. 사람이 본다 */
     NEEDS_ATTENTION,
 }
 

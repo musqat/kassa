@@ -1,5 +1,9 @@
 package com.kassa.saga
 
+import com.kassa.common.error.BusinessException
+import com.kassa.common.error.ErrorCode
+import com.kassa.order.repository.OrderRepository
+import com.kassa.order.service.OrderService
 import com.kassa.payment.gateway.GatewayTimeoutException
 import com.kassa.saga.domain.SagaInstance
 import com.kassa.saga.domain.SagaStatus
@@ -16,6 +20,8 @@ private val log = LoggerFactory.getLogger(OrderSagaOrchestrator::class.java)
 @Component
 class OrderSagaOrchestrator(
     private val recorder: SagaRecorder,
+    private val orderService: OrderService,
+    private val orderRepository: OrderRepository,
     approvePayment: ApprovePaymentStep,
     confirmOrder: ConfirmOrderStep,
 ) {
@@ -25,11 +31,19 @@ class OrderSagaOrchestrator(
 
     // 승인부터 주문 확정까지
     fun start(orderNo: String, userId: Long, approvalToken: String?) {
+        // 남의 주문번호로 사가가 생기지 않게 주인부터 본다
+        orderRepository.findByOrderNoAndUserId(orderNo, userId)
+            ?: throw BusinessException(ErrorCode.ORDER_NOT_FOUND)
+
         val instance = recorder.startOrFind(orderNo)
 
         // 끝난 사가는 다시 돌지 않는다. SagaStep 을 또 실행하면 결제가 두 건 된다
         if (instance.status == SagaStatus.COMPLETED) {
             return
+        }
+
+        if (instance.status == SagaStatus.FAILED || instance.status == SagaStatus.NEEDS_ATTENTION){
+            throw BusinessException(ErrorCode.PAYMENT_CLOSED)
         }
 
         for (handler in steps) {
@@ -43,11 +57,15 @@ class OrderSagaOrchestrator(
                 recorder.stepFailed(step, e.message ?: e.javaClass.simpleName)
                 log.warn("사가 단계 실패: {} {}", orderNo, handler.name, e)
 
-                // 타임아웃이면 보상하지 않고 RUNNING 으로 둔다. 승인 여부를 모르는데 되돌리면
-                // 멀쩡한 결제를 취소한다. 확인 스케줄러가 결과를 확정한 뒤 복구가 이어받는다
+                // 타임아웃은 결과를 모르니 되돌리지 않는다. 확인 스케줄러가 정한 뒤 복구가 잇는다
                 if (e is GatewayTimeoutException) throw e
 
                 compensate(orderNo, userId, approvalToken, instance)
+
+                if (instance.status == SagaStatus.FAILED) {
+                    orderService.closeFailed(orderNo)
+                }
+
                 throw e
             }
         }

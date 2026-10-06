@@ -23,6 +23,7 @@ import org.springframework.http.MediaType
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActionsDsl
+import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import java.time.Instant
 
@@ -67,6 +68,13 @@ class CancelPaidOrderTest : IntegrationTest() {
 
     /** 담고 주문하고 승인까지 끝낸다. 주문번호를 리턴한다 */
     private fun paidOrder(quantity: Int = 2): String {
+        val orderNo = placeOrder(quantity)
+        confirm(orderNo).andExpect { status { isOk() } }
+        return orderNo
+    }
+
+    /** 담고 주문만 한다. 주문번호를 리턴한다 */
+    private fun placeOrder(quantity: Int = 2): String {
         mockMvc.post("/api/cart/items") {
             header("Authorization", "Bearer $token")
             contentType = MediaType.APPLICATION_JSON
@@ -86,16 +94,15 @@ class CancelPaidOrderTest : IntegrationTest() {
             """.trimIndent()
         }.andReturn().response.contentAsString
 
-        val orderNo = Regex("\"orderNo\":\"([^\"]+)\"").find(body)!!.groupValues[1]
+        return Regex("\"orderNo\":\"([^\"]+)\"").find(body)!!.groupValues[1]
+    }
 
+    private fun confirm(orderNo: String): ResultActionsDsl =
         mockMvc.post("/api/payments/confirm") {
             header("Authorization", "Bearer $token")
             contentType = MediaType.APPLICATION_JSON
             content = """{"orderNo":"$orderNo"}"""
-        }.andExpect { status { isOk() } }
-
-        return orderNo
-    }
+        }
 
     private fun cancel(orderNo: String, bearer: String = token): ResultActionsDsl =
         mockMvc.post("/api/orders/$orderNo/cancel") {
@@ -106,6 +113,52 @@ class CancelPaidOrderTest : IntegrationTest() {
 
     private fun paymentOf(orderNo: String) =
         orderRepository.findByOrderNo(orderNo)!!.let { paymentRepository.findAllByOrderIdOrderByIdDesc(it.id!!).single() }
+
+    @Test
+    fun `승인 결과를 모르는 주문은 취소할 수 없고 선점도 그대로다`() {
+        val orderNo = placeOrder()
+        gateway.nextResult = FakePaymentGateway.Outcome.TIMEOUT
+        confirm(orderNo).andExpect { status { isAccepted() } }
+
+        // 대행사에서는 승인됐을 수 있다. 여기서 주문을 닫으면 돈만 빠진 취소 주문이 된다
+        cancel(orderNo).andExpect {
+            status { isConflict() }
+            jsonPath("$.code") { value("ORDER_006") }
+        }
+
+        val order = orderRepository.findByOrderNoAndUserId(orderNo, userId)!!
+        assertThat(order.status).isEqualTo(OrderStatus.PENDING)
+        assertThat(productNow().reservedStock).isEqualTo(2)
+    }
+
+    @Test
+    fun `승인 결과를 모르는 주문은 상세에 결제 확인 중으로 나온다`() {
+        val orderNo = placeOrder()
+        gateway.nextResult = FakePaymentGateway.Outcome.TIMEOUT
+        confirm(orderNo)
+
+        mockMvc.get("/api/orders/$orderNo") {
+            header("Authorization", "Bearer $token")
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.paymentInProgress") { value(true) }
+        }
+    }
+
+    @Test
+    fun `거절로 닫힌 주문은 취소할 수 없다`() {
+        val orderNo = placeOrder()
+        gateway.nextResult = FakePaymentGateway.Outcome.FAIL
+        confirm(orderNo).andExpect { status { isConflict() } }
+
+        cancel(orderNo).andExpect {
+            status { isConflict() }
+            jsonPath("$.code") { value("ORDER_003") }
+        }
+
+        assertThat(orderRepository.findByOrderNoAndUserId(orderNo, userId)!!.status).isEqualTo(OrderStatus.FAILED)
+        assertThat(productNow().reservedStock).isEqualTo(0)
+    }
 
     @Test
     fun `결제된 주문을 취소하면 주문과 결제가 CANCELED 다`() {

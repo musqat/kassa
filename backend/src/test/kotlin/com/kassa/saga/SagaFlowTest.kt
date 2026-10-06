@@ -208,6 +208,10 @@ class SagaFlowTest : IntegrationTest() {
 
         val order = orderRepository.findByOrderNoAndUserId(orderNo, userId)!!
         assertThat(order.status).isEqualTo(OrderStatus.PENDING)
+
+        // 사가가 생기면 주인이 결제할 때 막힌다
+        assertThat(instanceRepository.findByOrderNo(orderNo)).isNull()
+        confirm(orderNo).andExpect { status { isOk() } }
     }
 
     @Test
@@ -220,8 +224,28 @@ class SagaFlowTest : IntegrationTest() {
             jsonPath("$.code") { value("PAY_003") }
         }
 
+        // 되돌릴 것까지 끝났으니 주문을 닫고 선점을 푼다
         val order = orderRepository.findByOrderNoAndUserId(orderNo, userId)!!
-        assertThat(order.status).isEqualTo(OrderStatus.PENDING)
+        assertThat(order.status).isEqualTo(OrderStatus.FAILED)
+        assertThat(productRepository.findById(water.id!!).get().reservedStock).isEqualTo(0)
+    }
+
+    @Test
+    fun `실패로 끝난 주문에 다시 승인하면 409 PAY_004 이고 결제는 늘지 않는다`() {
+        gateway.nextResult = FakePaymentGateway.Outcome.FAIL
+        val orderNo = placeOrder()
+        confirm(orderNo)
+
+        gateway.reset()
+        confirm(orderNo).andExpect {
+            status { isConflict() }
+            jsonPath("$.code") { value("PAY_004") }
+        }
+
+        val order = orderRepository.findByOrderNoAndUserId(orderNo, userId)!!
+        assertThat(order.status).isEqualTo(OrderStatus.FAILED)
+        assertThat(paymentRepository.findAllByOrderIdOrderByIdDesc(order.id!!).map { it.status })
+            .containsExactly(PaymentStatus.FAILED)
     }
 
     @Test

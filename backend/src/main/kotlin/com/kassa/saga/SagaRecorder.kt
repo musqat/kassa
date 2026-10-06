@@ -92,6 +92,13 @@ class SagaRecorder(
         instanceRepository.save(instance)
     }
 
+    // 재시도 상한 저장
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    fun giveUp(instance: SagaInstance) {
+        instance.giveUp(Instant.now(clock))
+        instanceRepository.save(instance)
+    }
+
     // 보상이 거듭 실패해 멈춘 사가 저장
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     fun needsAttention(instance: SagaInstance) {

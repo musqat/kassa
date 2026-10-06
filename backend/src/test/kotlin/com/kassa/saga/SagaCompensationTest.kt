@@ -216,6 +216,33 @@ class SagaCompensationTest : IntegrationTest() {
     }
 
     @Test
+    fun `결과를 모르는 채 재시도 상한을 넘으면 되돌리지 않고 NEEDS_ATTENTION 으로 멈춘다`() {
+        gateway.nextResult = FakePaymentGateway.Outcome.TIMEOUT
+        val orderNo = placeOrder()
+        confirm(orderNo).andExpect { status { isAccepted() } }
+
+        // 첫 승인이 1번째 시도다. 복구가 상한까지 다시 걸고, 그다음 주기에 멈춘다
+        repeat(SagaRecoveryService.MAX_ATTEMPTS) {
+            clock.advance(Duration.ofMinutes(11))
+            recoveryService.recoverStuck(Duration.ofMinutes(10))
+        }
+
+        val instance = instanceRepository.findByOrderNo(orderNo)!!
+        assertThat(instance.status).isEqualTo(SagaStatus.NEEDS_ATTENTION)
+        val step = stepRepository.findAllBySagaInstanceIdOrderByIdAsc(instance.id!!).last()
+        assertThat(step.attemptCount).isEqualTo(SagaRecoveryService.MAX_ATTEMPTS)
+
+        // 결과를 모르니 취소를 부르지 않는다. 결제는 확인 대기로, 주문은 결제 전으로 남는다
+        val order = orderRepository.findByOrderNo(orderNo)!!
+        assertThat(order.status).isEqualTo(OrderStatus.PENDING)
+        assertThat(paymentRepository.findAllByOrderIdOrderByIdDesc(order.id!!).single().status).isEqualTo(PaymentStatus.REQUESTED)
+
+        // 멈춘 사가는 다시 집지 않는다
+        clock.advance(Duration.ofMinutes(11))
+        assertThat(recoveryService.recoverStuck(Duration.ofMinutes(10))).isEqualTo(0)
+    }
+
+    @Test
     fun `사가가 시작된 주문은 만료되지 않는다`() {
         val orderNo = placeOrder()
         recorder.startOrFind(orderNo)

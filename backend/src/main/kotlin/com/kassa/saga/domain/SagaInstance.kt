@@ -75,6 +75,14 @@ class SagaInstance(
         updatedAt = now
     }
 
+    /** 재시도 상한 저장. 결과를 모르니 되돌리지 않는다. RUNNING 에서만 */
+    fun giveUp(now: Instant) {
+        check(status == SagaStatus.RUNNING) { "실행 중이 아닙니다: $status" }
+
+        status = SagaStatus.NEEDS_ATTENTION
+        updatedAt = now
+    }
+
     /** 재시도 중단 저장. COMPENSATING 에서만 */
     fun needsAttention(now: Instant) {
         check(status == SagaStatus.COMPENSATING) { "되돌리기 중이 아닙니다: $status" }

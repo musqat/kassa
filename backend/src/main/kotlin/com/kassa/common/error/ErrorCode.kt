@@ -44,11 +44,13 @@ enum class ErrorCode(
     ORDER_NOT_CANCELABLE(HttpStatus.CONFLICT, "ORDER_003", "취소할 수 없는 주문입니다"),
     EMPTY_ORDER(HttpStatus.BAD_REQUEST, "ORDER_004", "주문할 상품이 없습니다"),
     ORDER_NOT_SHIPPABLE(HttpStatus.CONFLICT, "ORDER_005", "배송 처리할 수 없는 주문입니다"),
+    PAYMENT_IN_PROGRESS(HttpStatus.CONFLICT, "ORDER_006", "결제 결과를 확인하고 있습니다. 잠시 뒤 다시 시도해주세요"),
 
     // 결제 에러
     PAYMENT_AMOUNT_MISMATCH(HttpStatus.CONFLICT, "PAY_001", "결제 금액이 맞지 않습니다"),
     ORDER_NOT_PAYABLE(HttpStatus.CONFLICT, "PAY_002", "결제할 수 없는 주문입니다"),
     PAYMENT_REJECTED(HttpStatus.CONFLICT, "PAY_003", "결제가 거절됐습니다"),
+    PAYMENT_CLOSED(HttpStatus.CONFLICT, "PAY_004", "결제가 끝난 주문입니다. 장바구니에서 다시 주문하세요"),
 
     // 인증 에러
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH_001", "로그인이 필요합니다"),
