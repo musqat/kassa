@@ -28,10 +28,12 @@ data class OrderResponse(
     val paidAt: Instant?,
     // 결제 수단은 Payment 에 있다. 목록에서는 읽지 않아 null 이다
     val method: String?,
+    // 승인 결과를 모르는 중. 상세에서만 채운다
+    val paymentInProgress: Boolean = false,
 ) {
     companion object {
         // phone 은 복호화한 뒤 가린 값을 받는다
-        fun of(order: Order, phone: String, method: String? = null) = OrderResponse(
+        fun of(order: Order, phone: String, method: String? = null, paymentInProgress: Boolean = false) = OrderResponse(
             orderNo = order.orderNo,
             status = order.status,
             itemAmount = order.itemAmount,
@@ -48,6 +50,7 @@ data class OrderResponse(
             createdAt = order.createdAt,
             paidAt = order.paidAt,
             method = method,
+            paymentInProgress = paymentInProgress,
         )
     }
 }

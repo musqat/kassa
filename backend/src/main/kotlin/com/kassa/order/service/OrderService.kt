@@ -18,6 +18,7 @@ import com.kassa.order.dto.PlaceOrderRequest
 import com.kassa.order.dto.PlaceOrderResponse
 import com.kassa.order.repository.AddressRepository
 import com.kassa.order.repository.OrderRepository
+import com.kassa.payment.domain.PaymentStatus
 import com.kassa.payment.repository.PaymentRepository
 import com.kassa.pricing.ShippingPolicy
 import org.springframework.stereotype.Service
@@ -121,11 +122,21 @@ class OrderService(
         val expired = overdue.filterNot { skip(it.orderNo) }
 
         expired.forEach { order ->
-            order.expire(now)
+            order.fail(now)
             releaseStock(order)
         }
 
         return expired.size
+    }
+
+    // 승인이 실패한 주문을 FAILED 로 닫고 선점을 푼다. PENDING 이 아니면 그대로 둔다
+    @Transactional
+    fun closeFailed(orderNo: String) {
+        val order = orderRepository.findByOrderNo(orderNo) ?: return
+        if (order.status != OrderStatus.PENDING) return
+
+        order.fail(Instant.now(clock))
+        releaseStock(order)
     }
 
     // 주문 줄마다 잡아 둔 수량을 되돌린다. 여기서도 상품 행을 잠근다
@@ -151,11 +162,11 @@ class OrderService(
 
         // 상세에서만 결제 수단을 같이 읽는다. 목록에서 읽으면 주문마다 조회가 한 번씩 는다
         // 취소된 주문도 결제 수단을 보여주려고 상태를 가리지 않고 마지막 결제를 읽는다
-        val method = paymentRepository.findAllByOrderIdOrderByIdDesc(order.id!!)
-            .firstOrNull { it.method != null }
-            ?.method
+        val payments = paymentRepository.findAllByOrderIdOrderByIdDesc(order.id!!)
+        val method = payments.firstOrNull { it.method != null }?.method
+        val inProgress = order.status == OrderStatus.PENDING && payments.any { it.status == PaymentStatus.REQUESTED }
 
-        return OrderResponse.of(order, maskPhone(phoneCipher.decrypt(order.phoneEnc)), method)
+        return OrderResponse.of(order, maskPhone(phoneCipher.decrypt(order.phoneEnc)), method, inProgress)
     }
 
     // 드물지만 겹칠 수 있다. 한 번 더 만들어 보고 그래도 겹치면 예외

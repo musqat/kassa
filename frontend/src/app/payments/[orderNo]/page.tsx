@@ -37,6 +37,9 @@ const CHOICES: Choice[] = [
   { label: "금액 조작", outcome: "SUCCESS", amount: 100, hint: "등록 금액과 달라 거절된다" },
 ];
 
+// 주문이 닫혔다는 응답 코드
+const CLOSED_CODES = ["PAY_001", "PAY_003", "PAY_004"];
+
 // 결제창에 보여 줄 이름. 첫 상품에 나머지 건수를 붙인다
 function orderNameOf(order: Order): string {
   const first = order.items[0];
@@ -49,6 +52,8 @@ export default function PaymentPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  // 주문이 닫혀 다시 결제할 수 없다
+  const [closed, setClosed] = useState(false);
 
   const load = useCallback(
     () =>
@@ -83,6 +88,9 @@ export default function PaymentPage() {
       router.push(`/orders/${orderNo}`);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "결제에 실패했습니다");
+      if (e instanceof ApiError && CLOSED_CODES.includes(e.code ?? "")) {
+        setClosed(true);
+      }
     } finally {
       setPending(false);
     }
@@ -145,7 +153,7 @@ export default function PaymentPage() {
       <button
         type="button"
         onClick={payWithToss}
-        disabled={pending}
+        disabled={pending || closed}
         className="border-line h-12 rounded-[var(--radius-field)] border bg-black text-sm text-white disabled:opacity-40"
       >
         토스로 결제하기
@@ -164,7 +172,7 @@ export default function PaymentPage() {
                 key={choice.label}
                 type="button"
                 onClick={() => pay(choice)}
-                disabled={pending}
+                disabled={pending || closed}
                 className="border-line flex flex-col items-start gap-1 rounded-[var(--radius-field)] border bg-white px-4 py-3 text-left disabled:opacity-40"
               >
                 <span className="text-sm">{choice.label}</span>
@@ -176,6 +184,12 @@ export default function PaymentPage() {
       )}
 
       {error && <p className="text-danger text-xs">{error}</p>}
+
+      {closed && (
+        <Link href="/cart" className="text-xs underline">
+          장바구니에서 다시 주문하기
+        </Link>
+      )}
 
       <Link href={`/orders/${orderNo}`} className="text-muted px-1 text-xs underline">
         주문으로 돌아가기

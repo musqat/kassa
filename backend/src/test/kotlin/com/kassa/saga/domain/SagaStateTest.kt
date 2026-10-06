@@ -3,7 +3,6 @@ package com.kassa.saga.domain
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
-import org.testcontainers.shaded.org.checkerframework.checker.units.qual.s
 import java.time.Duration
 import java.time.Instant
 
@@ -73,6 +72,22 @@ class SagaStateTest {
         saga.needsAttention(later)
 
         assertThat(saga.status).isEqualTo(SagaStatus.NEEDS_ATTENTION)
+    }
+
+    @Test
+    fun `실행 중인 사가는 포기하면 NEEDS_ATTENTION 이 된다`() {
+        val saga = instance()
+        saga.giveUp(later)
+
+        assertThat(saga.status).isEqualTo(SagaStatus.NEEDS_ATTENTION)
+    }
+
+    @Test
+    fun `되돌리기 중인 사가는 포기할 수 없다`() {
+        val saga = instance()
+        saga.startCompensating(now)
+
+        assertThatThrownBy { saga.giveUp(later) }.isInstanceOf(IllegalStateException::class.java)
     }
 
     @Test

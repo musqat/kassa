@@ -26,6 +26,14 @@ class SagaRecoveryService(
         val stuck = recorder.claimStuck(SagaStatus.RUNNING, cutoff, RECOVER_BATCH)
 
         for (instance in stuck) {
+            val last = recorder.stepsOf(instance.id!!).lastOrNull()
+
+            if (last != null && last.attemptCount >= MAX_ATTEMPTS) {
+                recorder.giveUp(instance)
+                log.error("사가 재시도 상한: {} {}", instance.orderNo, last.stepName)
+                continue
+            }
+
             val order = orderRepository.findByOrderNo(instance.orderNo) ?: continue
             try {
                 orchestrator.start(instance.orderNo, order.userId, null)
@@ -38,5 +46,8 @@ class SagaRecoveryService(
 
     companion object {
         const val RECOVER_BATCH = 20
+
+        // 복구가 5분마다라 약 20분
+        const val MAX_ATTEMPTS = 5
     }
 }

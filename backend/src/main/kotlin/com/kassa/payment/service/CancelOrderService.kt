@@ -33,6 +33,11 @@ class CancelOrderService(
         val order = orderRepository.findByOrderNoAndUserId(orderNo, userId)
             ?: throw BusinessException(ErrorCode.ORDER_NOT_FOUND)
 
+        // 승인 결과를 모르는 주문은 닫지 않는다
+        if (order.status == OrderStatus.PENDING && paymentRepository.findByOrderIdAndStatus(order.id!!, PaymentStatus.REQUESTED) != null) {
+            throw BusinessException(ErrorCode.PAYMENT_IN_PROGRESS)
+        }
+
         // 돈이 오간 주문이면 먼저 되돌린다. 취소가 실패하면 주문도 그대로 둔다
         if (order.status == OrderStatus.PAID) {
             refund(order.id!!, orderNo)

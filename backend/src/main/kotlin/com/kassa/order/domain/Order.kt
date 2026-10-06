@@ -115,8 +115,8 @@ class Order(
         shippedAt = now
     }
 
-    /** 만료 저장. PENDING 에서만 */
-    fun expire(now: Instant) {
+    /** 결제 없이 닫는다(만료·승인 실패). PENDING 에서만 */
+    fun fail(now: Instant) {
         if (status != OrderStatus.PENDING) {
             throw BusinessException(ErrorCode.ORDER_NOT_CANCELABLE)
         }
