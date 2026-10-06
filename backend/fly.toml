@@ -12,10 +12,10 @@ primary_region = "sin"
 [http_service]
   internal_port = 8080
   force_https = true
-  # 스케줄러가 계속 돌아야 해서 재우지 않는다
-  auto_stop_machines = false
+  # 요청이 없으면 멈추고 다음 요청에 켠다. 멈춘 동안은 스케줄러도 쉬고, 켜지면 밀린 일을 이어서 한다
+  auto_stop_machines = "stop"
   auto_start_machines = true
-  min_machines_running = 1
+  min_machines_running = 0
 
   [[http_service.checks]]
     grace_period = "40s"
@@ -26,4 +26,4 @@ primary_region = "sin"
 
 [[vm]]
   size = "shared-cpu-1x"
-  memory = "1gb"
+  memory = "512mb"
