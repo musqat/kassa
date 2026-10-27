@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   ApiError,
+  getAdminAttention,
   getAdminOrder,
   getAdminOrders,
   shipOrder,
+  type AdminAttention,
   type AdminOrder,
   type AdminOrderDetail,
   type OrderStatus,
@@ -17,16 +19,25 @@ type Filter = OrderStatus | "ALL";
 
 const FILTERS: Filter[] = ["ALL", "PENDING", "PAID", "SHIPPED", "CANCELED", "FAILED"];
 
+const REASON_LABEL: Record<AdminAttention["reason"], string> = {
+  PAYMENT_UNKNOWN: "결제 결과 모름",
+  SAGA_STOPPED: "재시도 멈춤",
+};
+
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [attention, setAttention] = useState<AdminAttention[]>([]);
   const [filter, setFilter] = useState<Filter>("ALL");
   const [opened, setOpened] = useState<AdminOrderDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(
     () =>
-      getAdminOrders()
-        .then(setOrders)
+      Promise.all([getAdminOrders(), getAdminAttention()])
+        .then(([list, stuck]) => {
+          setOrders(list);
+          setAttention(stuck);
+        })
         .catch((e) => setError(e instanceof ApiError ? e.message : "불러오기에 실패했습니다")),
     [],
   );
@@ -80,6 +91,24 @@ export default function AdminOrdersPage() {
         ))}
         <span className="text-muted ml-auto text-xs">{visible.length}건</span>
       </div>
+
+      {attention.length > 0 && (
+        <div className="border-danger flex flex-col gap-2 rounded-[var(--radius-card)] border bg-white px-5 py-4 text-sm">
+          <h2 className="text-danger font-bold">확인 필요 {attention.length}건</h2>
+          <p className="text-muted text-xs">
+            스케줄러가 끝내지 못한 주문입니다. 대행사 기록과 맞춰 본 뒤 처리해 주세요
+          </p>
+          <ul className="flex flex-col gap-1 text-[13px]">
+            {attention.map((item) => (
+              <li key={`${item.orderNo}-${item.reason}`} className="flex flex-wrap gap-3">
+                <span className="min-w-[170px]">{item.orderNo}</span>
+                <span className="w-[110px]">{REASON_LABEL[item.reason]}</span>
+                <span className="text-subtle text-xs">{formatDateTime(item.since)}부터</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {error && <p className="text-danger text-xs">{error}</p>}
 
