@@ -16,6 +16,9 @@ interface SagaInstanceRepository : JpaRepository<SagaInstance, Long> {
 
     fun findByOrderNo(orderNo: String): SagaInstance?
 
+    // 잠그지 않는 상태별 조회
+    fun findAllByStatus(status: SagaStatus): List<SagaInstance>
+
     // 주문번호로 사가 존재 확인
     fun existsByOrderNo(orderNo: String): Boolean
 
