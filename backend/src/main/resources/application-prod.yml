@@ -5,6 +5,11 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD}
     hikari:
       maximum-pool-size: ${DB_POOL_SIZE:10}
+      # 쉬는 동안 남길 연결 수와 그 밖의 연결을 닫기까지의 시간(ms)
+      minimum-idle: 2
+      idle-timeout: 120000
+      # 끊긴 연결을 버리기까지 기다리는 시간(ms)
+      validation-timeout: 1000
   jpa:
     properties:
       hibernate:
