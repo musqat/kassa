@@ -12,8 +12,8 @@ primary_region = "sin"
 [http_service]
   internal_port = 8080
   force_https = true
-  # 요청이 없으면 멈추고 다음 요청에 켠다. 멈춘 동안은 스케줄러도 쉬고, 켜지면 밀린 일을 이어서 한다
-  auto_stop_machines = "stop"
+  # 요청이 없으면 메모리째 얼리고 다음 요청에 되살림
+  auto_stop_machines = "suspend"
   auto_start_machines = true
   min_machines_running = 0
 
