@@ -15,11 +15,16 @@ import com.kassa.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mockito.clearInvocations
+import org.mockito.Mockito.never
+import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.http.MediaType
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.servlet.post
 import java.time.Instant
 
@@ -34,7 +39,7 @@ class InboxWorkerTest : IntegrationTest() {
     @Autowired private lateinit var inboxRepository: WebhookInboxRepository
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
     @Autowired private lateinit var tokenIssuer: TokenIssuer
-    @Autowired private lateinit var gateway: FakePaymentGateway
+    @MockitoSpyBean private lateinit var gateway: FakePaymentGateway
     @Autowired private lateinit var processor: InboxProcessor
 
     private lateinit var water: Product
@@ -162,6 +167,30 @@ class InboxWorkerTest : IntegrationTest() {
 
         assertThat(count).isEqualTo(0)
         assertThat(inbox().status).isEqualTo(InboxStatus.FAILED)
+    }
+
+    @Test
+    fun `없는 주문번호로 온 웹훅은 대행사에 묻지 않고 FAILED 가 된다`() {
+        sendWebhook("20260101-NOORDER1")
+
+        processor.processPending()
+
+        assertThat(inbox().status).isEqualTo(InboxStatus.FAILED)
+        assertThat(inbox().attemptCount).isEqualTo(0)
+        verify(gateway, never()).getPayment(anyString())
+    }
+
+    @Test
+    fun `이미 끝난 주문에 온 웹훅은 대행사에 묻지 않고 DONE 이 된다`() {
+        val orderNo = placeOrder()
+        confirm(orderNo)
+        clearInvocations(gateway)
+        sendWebhook(orderNo, eventId = "evt-2")
+
+        processor.processPending()
+
+        assertThat(inbox().status).isEqualTo(InboxStatus.DONE)
+        verify(gateway, never()).getPayment(anyString())
     }
 
     @Test

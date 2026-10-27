@@ -1,5 +1,6 @@
 package com.kassa.payment.inbox
 
+import com.kassa.order.domain.OrderStatus
 import com.kassa.order.repository.OrderRepository
 import com.kassa.payment.gateway.GatewayStatus
 import com.kassa.payment.gateway.PaymentGateway
@@ -46,15 +47,20 @@ class InboxProcessor(
             return
         }
 
-        val gatewayPayment = gateway.getPayment(orderNo)
-        if (gatewayPayment == null || gatewayPayment.status != GatewayStatus.PAID){
-            recorder.retry(inbox, "대행사에 승인된 결제 없음", maxAttempts)
-            return
-        }
-
+        // 대행사 조회는 결제 대기 주문만
         val order = orderRepository.findByOrderNo(orderNo)
         if (order == null){
             recorder.giveUp(inbox, "주문 없음")
+            return
+        }
+        if (order.status != OrderStatus.PENDING) {
+            recorder.done(inbox)
+            return
+        }
+
+        val gatewayPayment = gateway.getPayment(orderNo)
+        if (gatewayPayment == null || gatewayPayment.status != GatewayStatus.PAID){
+            recorder.retry(inbox, "대행사에 승인된 결제 없음", maxAttempts)
             return
         }
 

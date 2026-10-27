@@ -397,6 +397,17 @@ export function getAdminOrders(): Promise<AdminOrder[]> {
   return request<AdminOrder[]>("/api/admin/orders", { auth: true });
 }
 
+// 스케줄러가 끝내지 못한 주문
+export type AdminAttention = {
+  orderNo: string;
+  reason: "PAYMENT_UNKNOWN" | "SAGA_STOPPED";
+  since: string;
+};
+
+export function getAdminAttention(): Promise<AdminAttention[]> {
+  return request<AdminAttention[]>("/api/admin/attention", { auth: true });
+}
+
 export function getAdminOrder(orderNo: string): Promise<AdminOrderDetail> {
   return request<AdminOrderDetail>(`/api/admin/orders/${orderNo}`, { auth: true });
 }

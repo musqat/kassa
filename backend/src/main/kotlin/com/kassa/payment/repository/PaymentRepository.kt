@@ -19,6 +19,9 @@ interface PaymentRepository : JpaRepository<Payment, Long> {
 
     fun findByOrderIdAndStatus(orderId: Long, status: PaymentStatus): Payment?
 
+    // 잠그지 않는 상태별 조회
+    fun findAllByStatusAndRequestedAtBefore(status: PaymentStatus, cutoff: Instant): List<Payment>
+
     // 대행사 기록과 대조할 때는 그날 승인된 결제만 본다
     fun findAllByStatusAndApprovedAtBetween(
         status: PaymentStatus,
