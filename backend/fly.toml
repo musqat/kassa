@@ -12,7 +12,7 @@ primary_region = "sin"
 [http_service]
   internal_port = 8080
   force_https = true
-  # 요청이 없으면 메모리째 얼리고 다음 요청에 되살림
+  # 요청이 없으면 메모리째 일시 정지하고 다음 요청에 재개
   auto_stop_machines = "suspend"
   auto_start_machines = true
   min_machines_running = 0
